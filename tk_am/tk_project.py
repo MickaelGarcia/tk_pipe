@@ -171,3 +171,35 @@ class TkProject:
             for asset_dir in asset_dirs:
                 entity = TkAsset(asset_dir.name, asset_dir.path, asset_type)
                 yield entity
+
+    def get_or_create_asset(self, asset_type_code: str, asset_code: str) -> TkAsset:
+        """Get existing asset, if asset do not exist, create it.
+
+        Args:
+            asset_type_code (str): Type of asset as chr, prp, lvl...
+            asset_code (str): Code of asset.
+
+        Returns:
+            TkAsset
+        """
+        tk_assert.is_str(asset_type_code)
+        tk_assert.is_match(asset_type_code, c_am.asset_type_code_str)
+        tk_assert.is_str(asset_code)
+        tk_assert.is_match(asset_code, c_am.asset_code_str)
+
+        assets = []
+        asset_type_path = os.path.join(self.path, asset_type_code)
+        try:
+            assets = self.get_assets(asset_type_code)
+        except MissingTkAssetTypeError:
+            os.mkdir(asset_type_path)
+
+        for asset in assets:
+            if asset_code == asset.code:
+                return asset
+
+        asset_type = TkAssetType(asset_type_code, asset_type_path, self)
+        asset_path = os.path.join(self.path, asset_type_code, asset_code)
+        os.mkdir(os.path.join(self.path, asset_type_code, asset_code))
+
+        return TkAsset(asset_code, asset_path, asset_type)
