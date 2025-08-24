@@ -62,3 +62,21 @@ class TkAsset(TkEntity):
                 return task
 
         raise MissingTkTaskError(f"No task found with given code {code!r}")
+
+    def get_or_create_task(self, code: str) -> TkTask:
+        """Get existing task, if task do not exist, create it.
+
+        Args:
+            code (str): Task code.
+        """
+        tk_assert.is_str(code)
+        tk_assert.is_match(code, c_am.task_code_str)
+
+        try:
+            task = self.get_task(code)
+        except MissingTkTaskError:
+            task_path = os.path.join(self.path, code)
+            os.mkdir(task_path)
+            task = TkTask(code, task_path, self)
+
+        return task
