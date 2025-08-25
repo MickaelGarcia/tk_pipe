@@ -4,7 +4,16 @@ from __future__ import annotations
 
 import re
 
+from enum import Enum
+
 import lucidity
+
+
+class ReleaseType(str, Enum):
+    """Release type values."""
+
+    RELEASE: str = "release"
+    WORK: str = "work"
 
 
 # Uppercase, number after first character.
@@ -34,7 +43,7 @@ task_code_grp_re = re.compile(rf"^{task_code_grp}$")
 # camelCase, number after first word.
 publish_code_str = r"[a-z]+(?:[A-Z][a-z0-9]*)*"
 publish_code_grp = rf"(?P<publish_code>{publish_code_str})"
-publish_code_grp_re = rf"^{publish_code_grp}$"
+publish_code_grp_re = re.compile(rf"^{publish_code_grp}$")
 
 
 # lowercase only.
@@ -83,12 +92,12 @@ project_work_dir_path_grp_re = re.compile(rf"^{project_work_dir_path_grp}$")
 
 project_release_dir_path_str = (
     rf"{project_root_path_grp}/assets/{asset_type_code_str}/{asset_code_str}/"
-    rf"{task_code_str}/release/r(?P<version>\d{{3}})/{publish_code_str}"
+    rf"{task_code_str}/{publish_code_str}/release/r(?P<version>\d{{3}})"
 )
 
 project_release_dir_path_grp = (
     rf"{project_code_grp}/assets/{asset_type_code_grp}/{asset_code_grp}/"
-    rf"{task_code_grp}/release/r(?P<version>\d{{3}})/{publish_code_grp}"
+    rf"{task_code_grp}/{publish_code_grp}/release/r(?P<version>\d{{3}})"
 )
 
 project_release_dir_path_grp_re = re.compile(rf"^{project_release_dir_path_grp}$")

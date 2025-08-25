@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import os
 
-from enum import Enum
 from pathlib import Path
 
 import tk_assert
@@ -13,14 +12,6 @@ import tk_assert
 from tk_am.tk_project import TkProject
 from tk_const.am import project_code_str
 from tk_error.am import MissingTkProjectError
-from tk_error.am import TkProjectAlreadyExistsError
-
-
-class ReleaseType(str, Enum):
-    """Release type values."""
-
-    RELEASE: str = "release"
-    WORK: str = "work"
 
 
 def get_or_create_project(
