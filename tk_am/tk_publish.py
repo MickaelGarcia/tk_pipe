@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from tk_am import ReleaseType
 from tk_am.tk_entity import TkEntity
 
 
 if TYPE_CHECKING:
     from tk_am.tk_tasks import TkTask
+    from tk_const.am import ReleaseType
 
 
 class TkPublish(TkEntity):
@@ -31,7 +31,7 @@ class TkPublish(TkEntity):
         self._version = version
 
     def __repr__(self):
-        return f"TkPublish({self.code} {self.version_number}) - {self.task}"
+        return f"TkPublish({self.code}_{self.version_code}) - {self.task}"
 
     @property
     def version_number(self) -> int:
@@ -41,4 +41,4 @@ class TkPublish(TkEntity):
     @property
     def version_code(self) -> str:
         """Return version code."""
-        return f"{self.release.value()[0]}{self._version:03d}"
+        return f"{self.release.value[0]}{self._version:03d}"
