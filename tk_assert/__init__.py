@@ -35,3 +35,10 @@ def is_inst(value: Any, object_type: type):
     assert isinstance(value, object_type), (
         f"{value!r} is not type {object_type.__name__!r}"
     )
+
+
+def is_opt_inst(value: Any, object_type: type):
+    """Assert if value is not type of given object_type or None."""
+    assert isinstance(value, (object_type, type(None))), (
+        f"{value!r} is not optional type {object_type!r}"
+    )
