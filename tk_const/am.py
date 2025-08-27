@@ -12,8 +12,8 @@ import lucidity
 class ReleaseType(str, Enum):
     """Release type values."""
 
-    RELEASE: str = "release"
-    WORK: str = "work"
+    Release = "release"
+    Work = "work"
 
 
 # Uppercase, number after first character.

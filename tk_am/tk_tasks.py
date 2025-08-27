@@ -72,7 +72,7 @@ class TkTask(TkEntity):
                         work_dir.path,
                         work_publish_type,
                         self,
-                        c_am.ReleaseType.WORK,
+                        c_am.ReleaseType.Work,
                         work_version,
                     )
 
@@ -122,7 +122,7 @@ class TkTask(TkEntity):
                             release_dir.path,
                             release_publish_type,
                             self,
-                            c_am.ReleaseType.RELEASE,
+                            c_am.ReleaseType.Release,
                             release_version,
                         )
 
@@ -132,13 +132,13 @@ class TkTask(TkEntity):
         self,
         code: str | None = None,
         publish_type: TkPublishType | None = None,
-        release: c_am.ReleaseType = c_am.ReleaseType.RELEASE,
+        release: c_am.ReleaseType = c_am.ReleaseType.Release,
     ) -> Iterator[TkPublish]:
         """Yield all publishes of task."""
         tk_assert.is_opt_str(code)
         tk_assert.is_opt_inst(release, c_am.ReleaseType)
 
-        if release == c_am.ReleaseType.WORK:
+        if release == c_am.ReleaseType.Work:
             yield from (
                 pb
                 for pb in self._get_work_publishes()
@@ -212,7 +212,7 @@ class TkTask(TkEntity):
                 f"{release.value}, {version} already exist."
             )
 
-        if release == c_am.ReleaseType.RELEASE:
+        if release == c_am.ReleaseType.Release:
             path_template = c_am.release_path_template
         else:
             path_template = c_am.work_path_template
