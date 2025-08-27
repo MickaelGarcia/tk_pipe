@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from typing_extensions import override
+
 import tk_assert
 
 from tk_error.am import MissingTkPublishTypeError
@@ -22,9 +24,7 @@ publish_desc_ext_by_code = {
     "file_json": ("file", ".json"),
 }
 
-publish_code_by_desc_ext = {
-    value: key for key, value in publish_desc_ext_by_code.items()
-}
+publish_code_by_desc_ext = {value: key for key, value in publish_desc_ext_by_code.items()}
 
 
 class TkPublishType:
@@ -42,3 +42,9 @@ class TkPublishType:
         if not publish_type_info:
             raise MissingTkPublishTypeError(f"File type {code!r} is not managed.")
         self.desc, self.ext = publish_type_info
+
+    @override
+    def __eq__(self, other: TkPublishType):
+        return (
+            self.code == other.code and self.desc == other.desc and self.ext == other.ext
+        )
