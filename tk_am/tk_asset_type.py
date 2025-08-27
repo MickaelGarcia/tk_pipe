@@ -10,7 +10,7 @@ from tk_am.tk_entity import TkEntity
 
 
 if TYPE_CHECKING:
-    from tk_am import TkProject
+    from tk_am.tk_project import TkProject
 
 
 class TkAssetType(TkEntity):
