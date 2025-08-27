@@ -17,3 +17,6 @@ class MissingTkAssetError(Exception):
 
 class MissingTkTaskError(Exception):
     """Raised when task do not exist."""
+
+class MissingTkPublishTypeError(Exception):
+    """Raise when publish type is not managed."""

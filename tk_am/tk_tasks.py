@@ -11,6 +11,8 @@ import tk_assert
 
 from tk_am.tk_entity import TkEntity
 from tk_am.tk_publish import TkPublish
+from tk_am.tk_publish_type import TkPublishType
+from tk_am.tk_publish_type import publish_code_by_desc_ext
 from tk_const import am as c_am
 
 
@@ -35,9 +37,10 @@ class TkTask(TkEntity):
     def __repr__(self):
         return f"TkTask({self.code}) - {self.asset}"
 
-    def get_publishes(
+    def publishes(
         self,
         code: str | None = None,
+        publish_type: TkPublishType | None = None,
         release: c_am.ReleaseType | None = None,
     ) -> Iterator[TkPublish]:
         """Yield all publishes of task."""
@@ -67,15 +70,28 @@ class TkTask(TkEntity):
 
                         work_publish_code = work_match.group("publish_code")
                         work_version = int(work_match.group("version"))
-                        work_pb = TkPublish(
-                            work_publish_code,
-                            work_dir.path,
-                            self,
-                            c_am.ReleaseType.WORK,
-                            work_version,
+                        work_pt_desc_ext = (
+                            work_match.group("file_desc"),
+                            work_match.group("extension"),
                         )
+                        publish_type_code = publish_code_by_desc_ext.get(work_pt_desc_ext)
 
-                        yield work_pb
+                        if (
+                            publish_type and publish_type_code == publish_type.code
+                        ) or publish_type is None:
+                            work_publish_type = TkPublishType(
+                                publish_type_code, self.project.am
+                            )
+                            work_pb = TkPublish(
+                                work_publish_code,
+                                work_dir.path,
+                                work_publish_type,
+                                self,
+                                c_am.ReleaseType.WORK,
+                                work_version,
+                            )
+
+                            yield work_pb
 
                 # Manage release
                 elif (
@@ -92,14 +108,29 @@ class TkTask(TkEntity):
                             if not release_match:
                                 continue
 
-                            release_publish_code = release_match.group("publish_code")
-                            release_version = int(release_match.group("version"))
-                            release_publish = TkPublish(
-                                release_publish_code,
-                                release_dir.path,
-                                self,
-                                c_am.ReleaseType.RELEASE,
-                                release_version,
+                            release_pt_desc_ext = (
+                                release_match.group("file_desc"),
+                                release_match.group("extension"),
                             )
+                            publish_type_code = publish_code_by_desc_ext.get(
+                                release_pt_desc_ext
+                            )
+                            if (
+                                publish_type and publish_type_code == publish_type.code
+                            ) or publish_type is None:
+                                release_publish_code = release_match.group("publish_code")
+                                release_version = int(release_match.group("version"))
+                                release_publish_type = TkPublishType(
+                                    publish_type_code, self.project.am
+                                )
 
-                            yield release_publish
+                                release_publish = TkPublish(
+                                    release_publish_code,
+                                    release_dir.path,
+                                    release_publish_type,
+                                    self,
+                                    c_am.ReleaseType.RELEASE,
+                                    release_version,
+                                )
+
+                                yield release_publish

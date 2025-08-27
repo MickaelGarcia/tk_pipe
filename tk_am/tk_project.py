@@ -22,11 +22,13 @@ from tk_error.am import TkProjectAlreadyExistsError
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
+    from tk_am.am import Am
+
 
 class TkProject:
     """Object represent a Project."""
 
-    def __init__(self, code: str, name: str, path: str):
+    def __init__(self, code: str, name: str, path: str, am: Am):
         tk_assert.is_str(code)
         tk_assert.is_match(code, c_am.project_code_str)
         tk_assert.is_str(name)
@@ -36,7 +38,8 @@ class TkProject:
         self.code = code
         self.name = name
         self._path = path
-        self.property = {}
+        self.properties = {}
+        self.am = am
 
     def __repr__(self):
         return f"TkProject({self.code})"
@@ -53,8 +56,8 @@ class TkProject:
             key (str): Name of property.
             value (Any): Property value.
         """
-        self.property[key] = value
-        self.save_project(force=True)
+        self.properties[key] = value
+        self.save_project()
 
     def update_properties(self, data: dict[str, Any]):
         """Update project properties with given data.
@@ -62,23 +65,24 @@ class TkProject:
         Args:
             data (dict[str, Any]): Dictionary to update current project properties.
         """
-        self.property.update(data)
-        self.save_project(force=True)
+        self.properties.update(data)
+        self.save_project()
 
     @classmethod
-    def from_dict(cls, data: dict) -> TkProject:
+    def from_dict(cls, data: dict, am: Am) -> TkProject:
         """Create TkProject from dict.
 
         Args:
             data (dict): Create TkProject from given data. Related to self.to_dict().
+            am (Am): Asset manager instance.
         """
         code = data["code"]
         name = data["name"]
         path = data["path"]
         properties = data.get("properties", {})
 
-        project = cls(code, name, path)
-        project.update_properties(properties)
+        project = cls(code, name, path, am)
+        project.properties = properties
         return project
 
     def to_dict(self) -> dict:
@@ -87,36 +91,19 @@ class TkProject:
             "code": self.code,
             "name": self.name,
             "path": self._path,
-            "properties": self.property,
+            "properties": self.properties,
         }
 
-    def save_project(self, force: bool = False):
+    def save_project(self):
         """Save current project in package configuration.
-
-        Args:
-            force (bool): Force to write project as new.
 
         Raises:
             TkProjectAlreadyExistsError: Raise when force is False and
                                          project already exists.
         """
-        from tk_am import get_projects_meta
-
-        home = Path.home()
-        meta_path = os.path.join(home, ".config", "tk_config", "project.meta")
-        os.makedirs(os.path.dirname(meta_path), exist_ok=True)
-
-        old_data = get_projects_meta()
-
-        if old_data.get(self.code) and not force:
-            raise TkProjectAlreadyExistsError(
-                f"Project {self.name!r} ({self.code!r}) Already exist."
-            )
-
-        old_data[self.code] = self.to_dict()
-
-        with open(meta_path, "w") as f:
-            json.dump(old_data, f)
+        old_data = self.am.project(self.code).to_dict()
+        old_data.update(self.to_dict())
+        self.am.update_meta("projects", {self.code: old_data})
 
     def asset(self, asset_type: str, code: str) -> TkAsset:
         """Get TkAsset object in project.
