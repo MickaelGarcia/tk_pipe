@@ -118,6 +118,7 @@ class TkProject:
         with open(meta_path, "w") as f:
             json.dump(old_data, f)
 
+    def asset(self, asset_type: str, code: str) -> TkAsset:
         """Get TkAsset object in project.
 
         Args:
