@@ -15,6 +15,7 @@ from tk_am.tk_publish_type import TkPublishType
 from tk_am.tk_publish_type import publish_code_by_desc_ext
 from tk_const import am as c_am
 from tk_error.am import MissingTkPublishError
+from tk_error.am import TkPublishAlreadyExistsError
 
 
 if TYPE_CHECKING:
@@ -188,7 +189,63 @@ class TkTask(TkEntity):
     ):
         """Get max versions of publish."""
         publish = max(
-            self.publishes(code, publish_type, release),
-            key=lambda pb: pb.version_number
+            self.publishes(code, publish_type, release), key=lambda pb: pb.version_number
         )
         return publish
+
+    def create_publish(
+        self,
+        code: str,
+        publish_type: TkPublishType,
+        release: c_am.ReleaseType,
+        version: int,
+    ) -> TkPublish:
+        already_exists = False
+        try:
+            self.publish(code, publish_type, release, version)
+        except MissingTkPublishError:
+            already_exists = True
+
+        if not already_exists:
+            raise TkPublishAlreadyExistsError(
+                f"Publish {code} - {publish_type.code} - "
+                f"{release.value}, {version} already exist."
+            )
+
+        if release == c_am.ReleaseType.RELEASE:
+            path_template = c_am.release_path_template
+        else:
+            path_template = c_am.work_path_template
+
+        path_format = path_template.format(
+            {
+                "project": self.project.code,
+                "asset_type_code": self.asset.asset_type.code,
+                "asset_code": self.asset.code,
+                "task_code": self.code,
+                "publish_code": code,
+                "publish_type_code": publish_type.code,
+                "file_desc": publish_type.desc,
+                "version": f"{version:03d}",
+                "extension": publish_type.ext,
+            }
+        )
+
+        publish_path = os.path.normpath(f"{self.project.root_path}{path_format}")
+        publish = TkPublish(code, publish_path, publish_type, self, release, version)
+        return publish
+
+    def create_next_publish(
+        self,
+        code: str,
+        publish_type: TkPublishType,
+        release: c_am.ReleaseType,
+    ) -> TkPublish:
+        """Create publish to the next available versions."""
+        last_publish = self.last_publish(code, publish_type, release)
+        return self.create_publish(
+            code,
+            publish_type,
+            release,
+            last_publish.version_number + 1,
+        )
