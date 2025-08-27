@@ -200,6 +200,10 @@ class TkTask(TkEntity):
         release: c_am.ReleaseType,
         version: int,
     ) -> TkPublish:
+        """Create new publish object.
+
+        Useful to generate new path, but do not generate any new file/directory.
+        """
         already_exists = False
         try:
             self.publish(code, publish_type, release, version)
@@ -241,7 +245,10 @@ class TkTask(TkEntity):
         publish_type: TkPublishType,
         release: c_am.ReleaseType,
     ) -> TkPublish:
-        """Create publish to the next available versions."""
+        """Create publish object to the next available versions.
+
+        Useful to generate new path, but do not generate any new file/directory.
+        """
         last_publish = self.last_publish(code, publish_type, release)
         return self.create_publish(
             code,
