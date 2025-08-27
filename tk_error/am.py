@@ -23,3 +23,6 @@ class MissingTkPublishTypeError(Exception):
 
 class MissingTkPublishError(Exception):
     """Raise when publish do not exist."""
+
+class TkPublishAlreadyExistsError(Exception):
+    """Raise when publish already exist."""
