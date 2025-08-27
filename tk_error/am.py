@@ -20,3 +20,6 @@ class MissingTkTaskError(Exception):
 
 class MissingTkPublishTypeError(Exception):
     """Raise when publish type is not managed."""
+
+class MissingTkPublishError(Exception):
+    """Raise when publish do not exist."""
