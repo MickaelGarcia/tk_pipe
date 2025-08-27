@@ -40,7 +40,7 @@ class TkAsset(TkEntity):
         """Return asset full code."""
         return f"{self.asset_type.code}_{self.code}"
 
-    def get_tasks(self) -> Iterator[TkTask]:
+    def tasks(self) -> Iterator[TkTask]:
         """Yield asset tasks."""
         return (
             TkTask(d.name, d.path, self)
@@ -48,7 +48,7 @@ class TkAsset(TkEntity):
             if c_am.task_code_grp_re.match(d.name)
         )
 
-    def get_task(self, code:str):
+    def task(self, code:str):
         """Return TkTask with given code.
 
         Args:
@@ -57,7 +57,7 @@ class TkAsset(TkEntity):
         Raises:
             MissingTkTaskError
         """
-        for task in self.get_tasks():
+        for task in self.tasks():
             if task.code == code:
                 return task
 
@@ -73,7 +73,7 @@ class TkAsset(TkEntity):
         tk_assert.is_match(code, c_am.task_code_str)
 
         try:
-            task = self.get_task(code)
+            task = self.task(code)
         except MissingTkTaskError:
             task_path = os.path.join(self.path, code)
             os.mkdir(task_path)

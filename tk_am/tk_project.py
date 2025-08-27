@@ -118,7 +118,6 @@ class TkProject:
         with open(meta_path, "w") as f:
             json.dump(old_data, f)
 
-    def get_asset(self, asset_type: str, code: str) -> TkAsset:
         """Get TkAsset object in project.
 
         Args:
@@ -131,13 +130,13 @@ class TkProject:
         tk_assert.is_str(asset_type)
         tk_assert.is_str(code)
 
-        for asset in self.get_assets(asset_type):
+        for asset in self.assets(asset_type):
             if asset.code == code:
                 return asset
 
         raise MissingTkAssetError(f"No asset {code!r} of type {asset_type!r}")
 
-    def get_assets(self, asset_type: str | None = None) -> Iterator[TkAsset]:
+    def assets(self, asset_type: str | None = None) -> Iterator[TkAsset]:
         """Yield TkAsset entities.
 
         Args:
@@ -190,7 +189,7 @@ class TkProject:
         assets = []
         asset_type_path = os.path.join(self.path, asset_type_code)
         try:
-            assets = self.get_assets(asset_type_code)
+            assets = self.assets(asset_type_code)
         except MissingTkAssetTypeError:
             os.mkdir(asset_type_path)
 
