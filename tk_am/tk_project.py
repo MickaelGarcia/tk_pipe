@@ -16,7 +16,6 @@ from tk_am.tk_asset_type import TkAssetType
 from tk_const import am as c_am
 from tk_error.am import MissingTkAssetError
 from tk_error.am import MissingTkAssetTypeError
-from tk_error.am import TkProjectAlreadyExistsError
 
 
 if TYPE_CHECKING:
@@ -43,6 +42,11 @@ class TkProject:
 
     def __repr__(self):
         return f"TkProject({self.code})"
+
+    @property
+    def root_path(self):
+        """Get project root path."""
+        return self._path.replace("\\", "/")
 
     @property
     def path(self):
