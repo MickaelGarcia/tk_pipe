@@ -7,10 +7,9 @@ from typing import TYPE_CHECKING
 from tk_am.tk_entity import TkEntity
 
 
-
 if TYPE_CHECKING:
-    from tk_am.tk_tasks import TkTask
     from tk_am.tk_publish_type import TkPublishType
+    from tk_am.tk_tasks import TkTask
     from tk_const.am import ReleaseType
 
 
