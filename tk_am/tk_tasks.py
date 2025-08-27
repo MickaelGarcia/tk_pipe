@@ -14,6 +14,7 @@ from tk_am.tk_publish import TkPublish
 from tk_am.tk_publish_type import TkPublishType
 from tk_am.tk_publish_type import publish_code_by_desc_ext
 from tk_const import am as c_am
+from tk_error.am import MissingTkPublishError
 
 
 if TYPE_CHECKING:
@@ -151,61 +152,43 @@ class TkTask(TkEntity):
                 and (publish_type is None or pb.publish_type == publish_type)
             )
 
-                        if (
-                            publish_type and publish_type_code == publish_type.code
-                        ) or publish_type is None:
-                            work_publish_type = TkPublishType(
-                                publish_type_code, self.project.am
-                            )
-                            work_pb = TkPublish(
-                                work_publish_code,
-                                work_dir.path,
-                                work_publish_type,
-                                self,
-                                c_am.ReleaseType.WORK,
-                                work_version,
-                            )
+    def publish(
+        self,
+        code: str,
+        publish_type: TkPublishType,
+        release: c_am.ReleaseType,
+        version: int,
+    ) -> TkPublish:
+        """Get publish in task."""
+        tk_assert.is_str(code)
+        tk_assert.is_inst(publish_type, TkPublishType)
+        tk_assert.is_inst(release, c_am.ReleaseType)
+        tk_assert.is_int(version)
 
-                            yield work_pb
+        publishes = [
+            pb
+            for pb in self.publishes(code, publish_type, release)
+            if pb.version_number == version
+        ]
+        if not publishes:
+            raise MissingTkPublishError(
+                f"No publish {code!r} - {publish_type.code!r} "
+                f"- {release.value!r} for  version {version!r}"
+            )
 
-                # Manage release
-                elif (
-                    release is None or release == c_am.ReleaseType.RELEASE
-                ) and releases_dir.name == "release":
-                    release_version_dir = os.scandir(releases_dir.path)
+        if len(publishes) != 1:
+            raise ValueError(
+                f"Multiple version {version} found... this is a huge issues."
+            )
 
-                    for version_dir in release_version_dir:
-                        if not re.match(r"r\d{3}", version_dir.name):
-                            continue
+        return publishes[0]
 
-                        for release_dir in os.scandir(version_dir.path):
-                            release_match = c_am.single_file_re.match(release_dir.name)
-                            if not release_match:
-                                continue
-
-                            release_pt_desc_ext = (
-                                release_match.group("file_desc"),
-                                release_match.group("extension"),
-                            )
-                            publish_type_code = publish_code_by_desc_ext.get(
-                                release_pt_desc_ext
-                            )
-                            if (
-                                publish_type and publish_type_code == publish_type.code
-                            ) or publish_type is None:
-                                release_publish_code = release_match.group("publish_code")
-                                release_version = int(release_match.group("version"))
-                                release_publish_type = TkPublishType(
-                                    publish_type_code, self.project.am
-                                )
-
-                                release_publish = TkPublish(
-                                    release_publish_code,
-                                    release_dir.path,
-                                    release_publish_type,
-                                    self,
-                                    c_am.ReleaseType.RELEASE,
-                                    release_version,
-                                )
-
-                                yield release_publish
+    def last_publish(
+        self, code: str, publish_type: TkPublishType, release: c_am.ReleaseType
+    ):
+        """Get max versions of publish."""
+        publish = max(
+            self.publishes(code, publish_type, release),
+            key=lambda pb: pb.version_number
+        )
+        return publish
