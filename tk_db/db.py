@@ -11,13 +11,17 @@ from sqlalchemy.orm import sessionmaker
 
 from tk_db.dbassettype import DbAssetType
 from tk_db.dbproject import DbProject
+from tk_db.dbtasktype import DbTaskType
 from tk_db.errors import DbAssetTypeAlreadyExistsError
 from tk_db.errors import DbProjectAlreadyExistsError
+from tk_db.errors import DbTaskTypeAlreadyExistError
 from tk_db.errors import MissingDbAssetTypeError
 from tk_db.errors import MissingDbProjectError
+from tk_db.errors import MissingDbTaskTypeError
 from tk_db.models import AssetType
 from tk_db.models import Base
 from tk_db.models import Project
+from tk_db.models import TaskType
 
 
 if TYPE_CHECKING:
@@ -141,5 +145,53 @@ class Db:
                 f"Asset type {code!r} - {name!r} already exists."
             )
 
+        return self.asset_type(code)
 
-        return asset_type_obj
+    def task_type(self, code: str) -> DbTaskType:
+        """Get task type object.
+
+        Args:
+            code (str): Task type code.
+
+        Returns:
+            DbTaskType: Instance of database asset type.
+
+        Raises:
+            MissingDbTaskTypeError: Given task type code not found in database.
+        """
+        session = sessionmaker(bind=self._engine)()
+        task_type_query = session.query(TaskType).where(TaskType.code == code)
+        found_task_type = task_type_query.first()
+
+        if found_task_type is None:
+            raise MissingDbTaskTypeError(f"Unable to found task type with code {code!r}")
+
+        return DbTaskType(self, found_task_type)
+
+    def create_task_type(self, code: str, name: str) -> DbTaskType:
+        """Create new task type in database.
+
+        Args:
+            code (str): Task type code.
+            name (str): Task type name.
+
+        Raises:
+            DbTaskTypeAlreadyExistError
+
+        Returns:
+            DbTaskType
+        """
+        session = sessionmaker(bind=self._engine)()
+        try:
+            self.task_type(code)
+        except MissingDbTaskTypeError:
+            task_type_obj = TaskType(code=code, name=name)
+            session.add(task_type_obj)
+            session.commit()
+
+        else:
+            raise DbTaskTypeAlreadyExistError(
+                f"Task type {code!r} - {name!r} already exists."
+            )
+
+        return self.task_type(code)
