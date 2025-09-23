@@ -16,6 +16,7 @@ from tk_db.errors import DbProjectAlreadyExistsError
 from tk_db.errors import MissingDbAssetTypeError
 from tk_db.errors import MissingDbProjectError
 from tk_db.models import AssetType
+from tk_db.models import Base
 from tk_db.models import Project
 
 
@@ -30,6 +31,8 @@ class Db:
 
     def __init__(self):
         self._engine = create_engine(self._db_path)
+        self._engine.connect()
+        Base.metadata.create_all(bind=self._engine)
 
     def __repr__(self):
         return f"Db({self._db_path})"
@@ -56,7 +59,7 @@ class Db:
         found_project = project_query.first()
 
         if found_project is None:
-            raise MissingDbProjectError
+            raise MissingDbProjectError(f"Unable to found project with code: {code!r}")
 
         return DbProject(self, found_project)
 
@@ -88,7 +91,7 @@ class Db:
                 f"Project {code!r} - {name!r} already exist."
             )
 
-        return DbProject(self, project_obj)
+        return self.project(code)
 
     def asset_type(self, code: str) -> DbAssetType:
         """Get database asset type from his code.
@@ -107,7 +110,9 @@ class Db:
         found_asset_type = asset_type_query.first()
 
         if found_asset_type is None:
-            raise MissingDbAssetTypeError
+            raise MissingDbAssetTypeError(
+                f"Unable to found asset type with code {code!r}"
+            )
 
         return DbAssetType(self, found_asset_type)
 

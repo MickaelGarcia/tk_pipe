@@ -120,4 +120,4 @@ class DbProject:
                 f"already exists in project {self.code!r}."
             )
 
-        return DbAsset(asset_obj, asset_type, self)
+        return self.asset(asset_type, asset_code)
