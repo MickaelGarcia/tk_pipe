@@ -11,7 +11,12 @@ if TYPE_CHECKING:
 
 
 class DbAssetType:
-    """Database asset type object."""
+    """Database asset type object.
+
+    Args:
+        db (Db): Database object instance.
+        asset_type (AssetType) AssetType model object.
+    """
 
     def __init__(self, db: Db, asset_type: AssetType):
         self.db = db
