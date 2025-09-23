@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 
 from typing import TYPE_CHECKING
+from typing import Iterator
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -66,6 +67,13 @@ class Db:
             raise MissingDbProjectError(f"Unable to found project with code: {code!r}")
 
         return DbProject(self, found_project)
+
+    def projects(self) -> Iterator[DbProject]:
+        """Get all projects in database."""
+        session = self.session()
+        project_query = session.query(Project)
+        for project in project_query:
+            yield DbProject(self, project)
 
     def create_project(self, code: str, name: str) -> DbProject:
         """Create new project in database project table.
