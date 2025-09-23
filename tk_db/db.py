@@ -120,7 +120,7 @@ class Db:
 
         return DbAssetType(self, found_asset_type)
 
-    def create_asset_type(self, code: str, name: str) -> DbAssetType:
+    def get_or_create_asset_type(self, code: str, name: str) -> DbAssetType:
         """Create new asset type in database asset_type table.
 
         If given code:name already exist in database, return it.

@@ -75,7 +75,6 @@ class DbProject:
 
         return DbAsset(found_asset, asset_type, self)
 
-    @property
     def assets(self) -> Iterator[DbAsset]:
         """Return assets in project."""
         session = self.db.session()
@@ -90,7 +89,7 @@ class DbProject:
             asset_type = DbAssetType(self.db, asset_type_query)
             yield DbAsset(asset, asset_type, self)
 
-    def create_asset(self, asset_code: str, asset_type: DbAssetType) -> DbAsset:
+    def get_or_create_asset(self, asset_code: str, asset_type: DbAssetType) -> DbAsset:
         """Create new asset in database related to given project.
 
         Args:
