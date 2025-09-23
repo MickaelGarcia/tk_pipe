@@ -168,7 +168,14 @@ class Db:
 
         return DbTaskType(self, found_task_type)
 
-    def create_task_type(self, code: str, name: str) -> DbTaskType:
+    def task_types(self):
+        """Return all task types table."""
+        session = self.session()
+        tasks_query = session.query(TaskType)
+        for task in tasks_query:
+            yield DbTaskType(self, task)
+
+    def get_or_create_task_type(self, code: str, name: str) -> DbTaskType:
         """Create new task type in database.
 
         Args:

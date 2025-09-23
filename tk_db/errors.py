@@ -15,6 +15,9 @@ class MissingDbAssetError(Exception):
 class MissingDbTaskTypeError(Exception):
     """Raised when task type do not exist in database."""
 
+class MissingDbTaskError(Exception):
+    """Raised when task do not exist in database."""
+
 class DbProjectAlreadyExistsError(Exception):
     """Raised when trying to create project that already exist."""
 
@@ -26,3 +29,6 @@ class DbAssetAlreadyExistError(Exception):
 
 class DbTaskTypeAlreadyExistError(Exception):
     """Raised when trying to create task type that already exist."""
+
+class DbTaskAlreadyExistError(Exception):
+    """Raised when trying to create task that already exist."""
