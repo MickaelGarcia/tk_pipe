@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 from typing import TYPE_CHECKING
 
 from sqlalchemy import create_engine
@@ -24,7 +26,7 @@ if TYPE_CHECKING:
 class Db:
     """Database object."""
 
-    _db_path = "sqlite:///test_alchemy.db"
+    _db_path = f"sqlite:///{os.path.dirname(__file__)}/test_alchemy.db"
 
     def __init__(self):
         self._engine = create_engine(self._db_path)
