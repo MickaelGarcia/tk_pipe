@@ -34,16 +34,16 @@ class Db:
     _db_path = f"sqlite:///{os.path.dirname(__file__)}/test_alchemy.db"
 
     def __init__(self):
-        self._engine = create_engine(self._db_path)
-        self._engine.connect()
-        Base.metadata.create_all(bind=self._engine)
+        engine = create_engine(self._db_path)
+        Base.metadata.create_all(bind=engine)
 
     def __repr__(self):
         return f"Db({self._db_path})"
 
     def session(self) -> Session:
         """Return database session."""
-        session = sessionmaker(bind=self._engine)()
+        engine = create_engine(self._db_path)
+        session = sessionmaker(bind=engine)()
         return session
 
     def project(self, code: str) -> DbProject:
@@ -58,7 +58,7 @@ class Db:
         Raises:
             MissingDbProjectError: Given project code not found in database.
         """
-        session = sessionmaker(bind=self._engine)()
+        session = self.session()
         project_query = session.query(Project).where(Project.code == code)
         found_project = project_query.first()
 
@@ -82,7 +82,7 @@ class Db:
         Returns:
             DbProject
         """
-        session = sessionmaker(bind=self._engine)()
+        session = self.session()
         try:
             self.project(code)
         except MissingDbProjectError:
@@ -109,7 +109,7 @@ class Db:
         Raises:
             MissingDbAssetTypeError: Given asset type code not found in database.
         """
-        session = sessionmaker(bind=self._engine)()
+        session = self.session()
         asset_type_query = session.query(AssetType).where(AssetType.code == code)
         found_asset_type = asset_type_query.first()
 
@@ -132,7 +132,7 @@ class Db:
         Returns:
             DbAssetType
         """
-        session = sessionmaker(bind=self._engine)()
+        session = self.session()
         try:
             self.asset_type(code)
         except MissingDbAssetTypeError:
@@ -159,7 +159,7 @@ class Db:
         Raises:
             MissingDbTaskTypeError: Given task type code not found in database.
         """
-        session = sessionmaker(bind=self._engine)()
+        session = self.session()
         task_type_query = session.query(TaskType).where(TaskType.code == code)
         found_task_type = task_type_query.first()
 
@@ -181,7 +181,7 @@ class Db:
         Returns:
             DbTaskType
         """
-        session = sessionmaker(bind=self._engine)()
+        session = self.session()
         try:
             self.task_type(code)
         except MissingDbTaskTypeError:
