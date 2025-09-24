@@ -5,7 +5,6 @@ from __future__ import annotations
 import os
 
 from typing import TYPE_CHECKING
-from typing import Iterator
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -26,7 +25,7 @@ from tk_db.models import TaskType
 
 
 if TYPE_CHECKING:
-    from sqlalchemy.orm import Session
+    from collections.abc import Iterator
 
 
 class Db:
@@ -36,16 +35,11 @@ class Db:
 
     def __init__(self):
         engine = create_engine(self._db_path)
+        self.Session = sessionmaker(engine)
         Base.metadata.create_all(bind=engine)
 
     def __repr__(self):
         return f"Db({self._db_path})"
-
-    def session(self) -> Session:
-        """Return database session."""
-        engine = create_engine(self._db_path)
-        session = sessionmaker(bind=engine)()
-        return session
 
     def project(self, code: str) -> DbProject:
         """Get Database project from his code.
@@ -59,9 +53,9 @@ class Db:
         Raises:
             MissingDbProjectError: Given project code not found in database.
         """
-        session = self.session()
-        project_query = session.query(Project).where(Project.code == code)
-        found_project = project_query.first()
+        with self.Session() as session:
+            project_query = session.query(Project).where(Project.code == code)
+            found_project = project_query.first()
 
         if found_project is None:
             raise MissingDbProjectError(f"Unable to found project with code: {code!r}")
@@ -70,8 +64,9 @@ class Db:
 
     def projects(self) -> Iterator[DbProject]:
         """Get all projects in database."""
-        session = self.session()
-        project_query = session.query(Project)
+        with self.Session() as session:
+            project_query = session.query(Project)
+
         for project in project_query:
             yield DbProject(self, project)
 
@@ -90,14 +85,14 @@ class Db:
         Returns:
             DbProject
         """
-        session = self.session()
         try:
             self.project(code)
         except MissingDbProjectError:
-            project_obj = Project(code=code, name=name)
+            with self.Session() as session:
+                project_obj = Project(code=code, name=name)
 
-            session.add(project_obj)
-            session.commit()
+                session.add(project_obj)
+                session.commit()
         else:
             raise DbProjectAlreadyExistsError(
                 f"Project {code!r} - {name!r} already exist."
@@ -117,9 +112,9 @@ class Db:
         Raises:
             MissingDbAssetTypeError: Given asset type code not found in database.
         """
-        session = self.session()
-        asset_type_query = session.query(AssetType).where(AssetType.code == code)
-        found_asset_type = asset_type_query.first()
+        with self.Session() as session:
+            asset_type_query = session.query(AssetType).where(AssetType.code == code)
+            found_asset_type = asset_type_query.first()
 
         if found_asset_type is None:
             raise MissingDbAssetTypeError(
@@ -140,13 +135,13 @@ class Db:
         Returns:
             DbAssetType
         """
-        session = self.session()
         try:
             self.asset_type(code)
         except MissingDbAssetTypeError:
-            asset_type_obj = AssetType(code=code, name=name)
-            session.add(asset_type_obj)
-            session.commit()
+            with self.Session() as session:
+                asset_type_obj = AssetType(code=code, name=name)
+                session.add(asset_type_obj)
+                session.commit()
 
         else:
             raise DbAssetTypeAlreadyExistsError(
@@ -167,9 +162,9 @@ class Db:
         Raises:
             MissingDbTaskTypeError: Given task type code not found in database.
         """
-        session = self.session()
-        task_type_query = session.query(TaskType).where(TaskType.code == code)
-        found_task_type = task_type_query.first()
+        with self.Session() as session:
+            task_type_query = session.query(TaskType).where(TaskType.code == code)
+            found_task_type = task_type_query.first()
 
         if found_task_type is None:
             raise MissingDbTaskTypeError(f"Unable to found task type with code {code!r}")
@@ -178,8 +173,9 @@ class Db:
 
     def task_types(self):
         """Return all task types table."""
-        session = self.session()
-        tasks_query = session.query(TaskType)
+        with self.Session() as session:
+            tasks_query = session.query(TaskType)
+
         for task in tasks_query:
             yield DbTaskType(self, task)
 
@@ -196,13 +192,13 @@ class Db:
         Returns:
             DbTaskType
         """
-        session = self.session()
         try:
             self.task_type(code)
         except MissingDbTaskTypeError:
-            task_type_obj = TaskType(code=code, name=name)
-            session.add(task_type_obj)
-            session.commit()
+            with self.Session() as session:
+                task_type_obj = TaskType(code=code, name=name)
+                session.add(task_type_obj)
+                session.commit()
 
         else:
             raise DbTaskTypeAlreadyExistError(

@@ -62,13 +62,15 @@ class DbProject:
         Returns:
             DbAsset
         """
-        session = self.db.session()
-        asset_query = session.query(Asset).join(Project).join(AssetType)
-        found_asset = asset_query.filter(
-            Project.id == self.id,
-            AssetType.id == asset_type.id,
-        ).where(Asset.code == asset_code)
-        found_asset = found_asset.first()
+        with self.db.Session() as session:
+            asset_query = session.query(Asset).join(Project).join(AssetType)
+            found_asset = (
+                asset_query.filter(
+                    Project.id == self.id, AssetType.id == asset_type.id
+                )
+                .where(Asset.code == asset_code)
+            )
+            found_asset = found_asset.first()
 
         if found_asset is None:
             raise MissingDbAssetError
@@ -77,19 +79,23 @@ class DbProject:
 
     def assets(self) -> Iterator[DbAsset]:
         """Return assets in project."""
-        session = self.db.session()
-        assets_query = session.query(Asset).join(Project)
+        with self.db.Session() as session:
+            assets_query = session.query(Asset).join(Project)
 
-        for asset in assets_query:
-            asset_type_query = (
-                session.query(AssetType)
-                .where(AssetType.id == asset.asset_type_id)
-                .first()
-            )
-            asset_type = DbAssetType(self.db, asset_type_query)
-            yield DbAsset(asset, asset_type, self)
+            for asset in assets_query:
+                asset_type_query = (
+                    session.query(AssetType)
+                    .where(AssetType.id == asset.asset_type_id)
+                    .first()
+                )
+                asset_type = DbAssetType(self.db, asset_type_query)
+                yield DbAsset(asset, asset_type, self)
 
-    def get_or_create_asset(self, asset_code: str, asset_type: DbAssetType) -> DbAsset:
+    def get_or_create_asset(
+        self,
+        asset_code: str,
+        asset_type: DbAssetType,
+    ) -> DbAsset:
         """Create new asset in database related to given project.
 
         Args:
@@ -102,17 +108,17 @@ class DbProject:
         Returns:
             DbAsset
         """
-        session = self.db.session()
         try:
             self.asset(asset_type, asset_code)
         except MissingDbAssetError:
-            asset_obj = Asset(
-                code=asset_code,
-                asset_type_id=asset_type.id,
-                project_id=self.id,
-            )
-            session.add(asset_obj)
-            session.commit()
+            with self.db.Session() as session:
+                asset_obj = Asset(
+                    code=asset_code,
+                    asset_type_id=asset_type.id,
+                    project_id=self.id,
+                )
+                session.add(asset_obj)
+                session.commit()
         else:
             raise DbAssetAlreadyExistError(
                 f"Asset '{asset_type.code}_{asset_code}' "

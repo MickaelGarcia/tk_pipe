@@ -26,7 +26,12 @@ class DbAsset:
         asset_type (DbAssetType): Asset type of asset.
     """
 
-    def __init__(self, asset: Asset, asset_type: DbAssetType, project: DbProject):
+    def __init__(
+        self,
+        asset: Asset,
+        asset_type: DbAssetType,
+        project: DbProject,
+    ):
         self.project = project
         self.asset_type = asset_type
         self._bc_asset = asset
@@ -60,18 +65,23 @@ class DbAsset:
             ValueError: No task_type and code given
             MissingDbTaskError: No task found on asset with given code or type.
         """
-        session = self.project.db.session()
-        if task_type is None and code is not None:
-            task_type = session.query(TaskType).where(TaskType.code == code).first()
+        with self.project.db.Session() as session:
+            if task_type is None and code is not None:
+                task_type = (
+                    session.query(TaskType)
+                    .where(TaskType.code == code)
+                    .first()
+                )
 
-        if task_type is None:
-            raise ValueError("No code found from given task_type of code.")
+            if task_type is None:
+                raise ValueError("No code found from given task_type of code.")
 
-        task_qr = session.query(Task).join(TaskType).join(Asset)
-        task_filter = task_qr.filter(
-            TaskType.id == task_type.id, Asset.id == self.id
-        )
-        found_task = task_filter.first()
+            task_qr = session.query(Task).join(TaskType).join(Asset)
+            task_filter = task_qr.filter(
+                TaskType.id == task_type.id,
+                Asset.id == self.id,
+            )
+            found_task = task_filter.first()
 
         if found_task is None:
             raise MissingDbTaskError(f"Unable to found task {code!r}")
@@ -80,13 +90,15 @@ class DbAsset:
 
     def tasks(self):
         """Get all tasks of asset."""
-        session = self.project.db.session()
-        task_query = session.query(Task).where(Task.asset_id == self.id)
-        for task in task_query:
-            task_type = (
-                session.query(TaskType).where(TaskType.id == task.task_type_id).first()
-            )
-            yield DbTask(task, task_type, self)
+        with self.project.db.Session() as session:
+            task_query = session.query(Task).where(Task.asset_id == self.id)
+            for task in task_query:
+                task_type = (
+                    session.query(TaskType)
+                    .where(TaskType.id == task.task_type_id)
+                    .first()
+                )
+                yield DbTask(task, task_type, self)
 
     def get_or_create_task(
         self,
@@ -105,19 +117,18 @@ class DbAsset:
         Raises:
             MissingDbTaskTypeError: Raised if given task type is missing.
         """
-        session = self.project.db.session()
-
         if task_type is None and code is not None:
             task_type = self.project.db.task_type(code)
 
         try:
             self.task(task_type)
         except MissingDbTaskError:
-            task_obj = Task(
-                asset_id=self.id,
-                task_type_id=task_type.id,
-            )
-            session.add(task_obj)
-            session.commit()
+            with self.project.db.Session() as session:
+                task_obj = Task(
+                    asset_id=self.id,
+                    task_type_id=task_type.id,
+                )
+                session.add(task_obj)
+                session.commit()
 
         return self.task(task_type)

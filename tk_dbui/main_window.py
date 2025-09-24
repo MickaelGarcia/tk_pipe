@@ -55,4 +55,4 @@ if __name__ == "__main__":
     tk_app = App()
     widget = MainWindow(tk_app)
     widget.show()
-    app.exec_()
+    app.exec()
