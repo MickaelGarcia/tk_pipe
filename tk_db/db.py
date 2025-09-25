@@ -123,6 +123,13 @@ class Db:
 
         return DbAssetType(self, found_asset_type)
 
+    def asset_types(self):
+        """Get all asset type table."""
+        with self.Session() as session:
+            asset_type_query = session.query(AssetType)
+            for asset_type in asset_type_query:
+                yield DbAssetType(self, asset_type)
+
     def get_or_create_asset_type(self, code: str, name: str) -> DbAssetType:
         """Create new asset type in database asset_type table.
 
