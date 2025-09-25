@@ -157,7 +157,9 @@ class MainWidget(qtw.QWidget):
         self._db_buttons.show()
         self._lsv_asset_type.hide()
         if self._db_buttons.selected_button:
-            self._central_widget_by_name[self._db_buttons.selected_button].show()
+            widget = self._central_widget_by_name.get(self._db_buttons.selected_button)
+            if widget:
+                widget.show()
 
     def _on_db_buttons_pressed(self, button_name):
         for name, widg in self._central_widget_by_name.items():
@@ -168,8 +170,8 @@ class MainWidget(qtw.QWidget):
 
 
 if __name__ == "__main__":
-    app = qtw.QApplication(sys.argv)
+    qt_app = qtw.QApplication(sys.argv)
     tk_app = App()
     widget = MainWindow(tk_app)
     widget.show()
-    app.exec_()
+    qt_app.exec_()
