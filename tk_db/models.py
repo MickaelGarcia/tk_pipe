@@ -85,8 +85,8 @@ class PublishType(Base):
     __tablename__ = "publish_type"
 
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
-    code = Column(String, nullable=False, unique=True)
-    description = Column(String, nullable=False)
+    file_type = Column(String, nullable=False)
+    description = Column(String, nullable=False, unique=True)
     extension = Column(String, nullable=False)
 
     publish = relationship("Publish", back_populates="publish_type")

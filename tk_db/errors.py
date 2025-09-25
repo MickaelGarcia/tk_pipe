@@ -18,6 +18,9 @@ class MissingDbTaskTypeError(Exception):
 class MissingDbTaskError(Exception):
     """Raised when task do not exist in database."""
 
+class MissingDbPublishTypeError(Exception):
+    """Raised when publish type do not exist in database."""
+
 class DbProjectAlreadyExistsError(Exception):
     """Raised when trying to create project that already exist."""
 
@@ -32,3 +35,6 @@ class DbTaskTypeAlreadyExistError(Exception):
 
 class DbTaskAlreadyExistError(Exception):
     """Raised when trying to create task that already exist."""
+
+class DbPublishTypeAlreadyExistError(Exception):
+    """Raised when trying to create publish type that already exist."""
