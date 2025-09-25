@@ -9,7 +9,10 @@ from Qt import QtCore as qtc
 from Qt import QtWidgets as qtw
 
 from tk_db.db import Db
-from tk_dbui.models import AssetTypeTableModel
+from tk_dbui.centra_widgets_db import AssetTypeTable
+from tk_dbui.centra_widgets_db import PublishTypeTable
+from tk_dbui.centra_widgets_db import TaskTypeTable
+from tk_dbui.models import AssetTaskTypeTableModel
 from tk_dbui.models import ProjectListModel
 
 
@@ -29,6 +32,7 @@ class DbTableWidget(qtw.QWidget):
         super().__init__(*args, **kwargs)
 
         lay_main = qtw.QVBoxLayout(self)
+        self.selected_button = None
 
         self._btn_types = {
             qtw.QPushButton("Projects"): "projects",
@@ -47,6 +51,7 @@ class DbTableWidget(qtw.QWidget):
     def _on_button_pressed(self, button):
         for btn, name in self._btn_types.items():
             if btn == button:
+                self.selected_button = name
                 self.ButtonPressed.emit(name)
                 continue
             btn.setChecked(False)
@@ -71,6 +76,7 @@ class MainWidget(qtw.QWidget):
         super().__init__(*args, **kwargs)
         self.app = app
 
+        self._central_widget_by_name: dict[str, qtw.QWidget] = {}
         # Widgets
         self._cbx_project = qtw.QComboBox(self)
         self._project_model = ProjectListModel()
@@ -84,12 +90,24 @@ class MainWidget(qtw.QWidget):
         self._btn_asset.setCheckable(True)
 
         self._lsv_asset_type = qtw.QListView(self)
-        self._asset_type_model = AssetTypeTableModel()
+        self._asset_type_model = AssetTaskTypeTableModel()
         self._lsv_asset_type.setModel(self._asset_type_model)
         self._lsv_asset_type.hide()
 
         self._db_buttons = DbTableWidget(self)
         self._db_buttons.hide()
+
+        self._tbl_asset_type = AssetTypeTable(self.app, self)
+        self._tbl_asset_type.hide()
+        self._central_widget_by_name["asset_types"] = self._tbl_asset_type
+
+        self._tbl_task_type = TaskTypeTable(self.app, self)
+        self._tbl_task_type.hide()
+        self._central_widget_by_name["task_types"] = self._tbl_task_type
+
+        self._tbl_publish_type = PublishTypeTable(self.app, self)
+        self._tbl_publish_type.hide()
+        self._central_widget_by_name["publish_types"] = self._tbl_publish_type
 
         # Layouts
         lay_master = qtw.QHBoxLayout(self)
@@ -105,11 +123,14 @@ class MainWidget(qtw.QWidget):
         lay_base_content.addWidget(self._db_buttons)
 
         lay_master.addLayout(lay_base_content)
+        lay_master.addWidget(self._tbl_asset_type)
+        lay_master.addWidget(self._tbl_task_type)
+        lay_master.addWidget(self._tbl_publish_type)
 
         # Connections
         self._btn_asset.clicked.connect(self._on_btn_asset_clicked)
         self._btn_db.clicked.connect(self._on_btn_db_clicked)
-        self._db_buttons.ButtonPressed.connect(print)
+        self._db_buttons.ButtonPressed.connect(self._on_db_buttons_pressed)
 
         # Initialisation
 
@@ -117,17 +138,33 @@ class MainWidget(qtw.QWidget):
 
     def _on_btn_asset_clicked(self):
         is_checked = self._btn_asset.isChecked()
-        if is_checked:
-            self._btn_db.setChecked(False)
-            self._lsv_asset_type.show()
-            self._db_buttons.hide()
+        if not is_checked:
+            return
+
+        self._btn_db.setChecked(False)
+        self._lsv_asset_type.show()
+        self._db_buttons.hide()
+        for widg in self._central_widget_by_name.values():
+            widg.hide()
+
 
     def _on_btn_db_clicked(self):
         is_checked = self._btn_db.isChecked()
-        if is_checked:
-            self._btn_asset.setChecked(False)
-            self._db_buttons.show()
-            self._lsv_asset_type.hide()
+        if not is_checked:
+            return
+
+        self._btn_asset.setChecked(False)
+        self._db_buttons.show()
+        self._lsv_asset_type.hide()
+        if self._db_buttons.selected_button:
+            self._central_widget_by_name[self._db_buttons.selected_button].show()
+
+    def _on_db_buttons_pressed(self, button_name):
+        for name, widg in self._central_widget_by_name.items():
+            if button_name == name:
+                widg.show()
+            else:
+                widg.hide()
 
 
 if __name__ == "__main__":

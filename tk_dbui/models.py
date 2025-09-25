@@ -12,13 +12,14 @@ from typing_extensions import override
 if TYPE_CHECKING:
     from tk_db.dbassettype import DbAssetType
     from tk_db.dbproject import DbProject
+    from tk_db.publish_type import DbPublishType
 
 ASSET_TYPE_HEADER_TITLES = ["name", "code", "id"]
-
+PUBLISH_TYPE_HEADER_TITLES = ["descriptions", "file_type", "extension", "id"]
 
 ProjectRole = qtc.Qt.UserRole + 1
 ProjectCodeRole = qtc.Qt.UserRole + 2
-AssetTypeRole = qtc.Qt.UserRole + 3
+EntityRole = qtc.Qt.UserRole + 3
 
 
 class ProjectListModel(qtc.QAbstractListModel):
@@ -61,8 +62,8 @@ class ProjectListModel(qtc.QAbstractListModel):
         self.endInsertRows()
 
 
-class AssetTypeTableModel(qtc.QAbstractTableModel):
-    """Asset type list model."""
+class AssetTaskTypeTableModel(qtc.QAbstractTableModel):
+    """Asset type and task type table model."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -88,8 +89,15 @@ class AssetTypeTableModel(qtc.QAbstractTableModel):
 
         if role == qtc.Qt.DisplayRole:
             return column_display_role[colum]
-        elif role == AssetTypeRole:
+        elif role == EntityRole:
             return asset_type
+
+        return None
+
+    @override
+    def headerData(self, section, orientation, role = ...):
+        if role == qtc.Qt.DisplayRole:
+            return ASSET_TYPE_HEADER_TITLES[section]
 
         return None
 
@@ -108,5 +116,64 @@ class AssetTypeTableModel(qtc.QAbstractTableModel):
         )
 
         self._asset_types.append(asset_type)
+
+        self.endInsertRows()
+
+
+class PublishTypeTableModel(qtc.QAbstractTableModel):
+    """Publish type table model."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._publish_types: list[DbPublishType] = []
+
+    @override
+    def rowCount(self, parent=...):
+        return len(self._publish_types)
+
+    @override
+    def columnCount(self, parent=...):
+        return len(PUBLISH_TYPE_HEADER_TITLES)
+
+    @override
+    def data(self, index, role=...):
+        publish_type = self._publish_types[index.row()]
+        colum = index.column()
+        column_display_role = [
+            publish_type.description,
+            publish_type.file_type,
+            publish_type.extension,
+            publish_type.id,
+        ]
+
+        if role == qtc.Qt.DisplayRole:
+            return column_display_role[colum]
+        elif role == EntityRole:
+            return publish_type
+
+        return None
+
+    @override
+    def headerData(self, section, orientation, role = ...):
+        if role == qtc.Qt.DisplayRole:
+            return PUBLISH_TYPE_HEADER_TITLES[section]
+
+        return None
+
+    def set_publish_types(self, publish_types: list[DbPublishType]):
+        """Set asset type to model."""
+        self.beginResetModel()
+        self._publish_types = publish_types
+        self.endResetModel()
+
+    def add_publish_type(self, publish_type: DbPublishType):
+        """Add asset type in model."""
+        self.beginInsertRows(
+            qtc.QModelIndex(),
+            len(self._publish_types),
+            len(self._publish_types) + 1,
+        )
+
+        self._publish_types.append(publish_type)
 
         self.endInsertRows()
