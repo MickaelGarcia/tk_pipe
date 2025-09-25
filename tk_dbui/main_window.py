@@ -7,7 +7,8 @@ import sys
 from Qt import QtWidgets as qtw
 
 from tk_db.db import Db
-from tk_dbui.project_ui import ProjectListModel
+from tk_dbui.models import AssetTypeTableModel
+from tk_dbui.models import ProjectListModel
 
 
 class App:
@@ -48,6 +49,11 @@ class MainWidget(qtw.QWidget):
         self._btn_db = qtw.QPushButton("Db")
         self._btn_db.setCheckable(True)
 
+        self._lsv_asset_type = qtw.QListView(self)
+        self._asset_type_model = AssetTypeTableModel()
+        self._lsv_asset_type.setModel(self._asset_type_model)
+        self._lsv_asset_type.hide()
+
         # Layouts
         lay_master = qtw.QHBoxLayout(self)
         lay_base_content = qtw.QVBoxLayout()
@@ -58,6 +64,8 @@ class MainWidget(qtw.QWidget):
 
         lay_base_content.addWidget(self._cbx_project)
         lay_base_content.addLayout(lay_btn)
+        lay_base_content.addStretch()
+        lay_base_content.addWidget(self._lsv_asset_type)
 
         lay_master.addLayout(lay_base_content)
 
@@ -65,15 +73,21 @@ class MainWidget(qtw.QWidget):
         self._btn_asset.clicked.connect(self._on_btn_asset_clicked)
         self._btn_db.clicked.connect(self._on_btn_db_clicked)
 
+        # Initialisation
+
+        self._asset_type_model.set_asset_type(list(self.app.db.asset_types()))
+
     def _on_btn_asset_clicked(self):
         is_checked = self._btn_asset.isChecked()
         if is_checked:
             self._btn_db.setChecked(False)
+            self._lsv_asset_type.show()
 
     def _on_btn_db_clicked(self):
         is_checked = self._btn_db.isChecked()
         if is_checked:
             self._btn_asset.setChecked(False)
+            self._lsv_asset_type.hide()
 
 
 if __name__ == "__main__":
@@ -81,4 +95,4 @@ if __name__ == "__main__":
     tk_app = App()
     widget = MainWindow(tk_app)
     widget.show()
-    app.exec()
+    app.exec_()
