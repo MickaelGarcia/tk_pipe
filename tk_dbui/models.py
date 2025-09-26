@@ -14,8 +14,8 @@ if TYPE_CHECKING:
     from tk_db.dbproject import DbProject
     from tk_db.publish_type import DbPublishType
 
-ASSET_TYPE_HEADER_TITLES = ["name", "code", "id"]
-PUBLISH_TYPE_HEADER_TITLES = ["descriptions", "file_type", "extension", "id"]
+ASSET_TYPE_HEADER_TITLES = ["Name", "Code", "Id"]
+PUBLISH_TYPE_HEADER_TITLES = ["Code", "File_type", "Extension", "Id"]
 
 ProjectRole = qtc.Qt.UserRole + 1
 ProjectCodeRole = qtc.Qt.UserRole + 2

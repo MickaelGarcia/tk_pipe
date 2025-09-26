@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from sqlalchemy import Boolean
 from sqlalchemy import Column
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
@@ -21,6 +22,7 @@ class Project(Base):
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     code = Column(String, unique=True, nullable=False)
     name = Column(String, unique=False, nullable=False)
+    active = Column(Boolean)
 
     asset = relationship("Asset", back_populates="project")
 
@@ -44,6 +46,7 @@ class Asset(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     code = Column(String, nullable=False)
+    active = Column(Boolean)
 
     asset_type_id = Column(Integer, ForeignKey("asset_type.id"))
     project_id = Column(Integer, ForeignKey("project.id"))
@@ -73,6 +76,7 @@ class Task(Base):
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     asset_id = Column(Integer, ForeignKey("asset.id"))
     task_type_id = Column(Integer, ForeignKey("task_type.id"))
+    active = Column(Boolean)
 
     asset = relationship("Asset", back_populates="task")
     task_type = relationship("TaskType", back_populates="task")
@@ -85,8 +89,8 @@ class PublishType(Base):
     __tablename__ = "publish_type"
 
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    code = Column(String, nullable=False, unique=True)
     file_type = Column(String, nullable=False)
-    description = Column(String, nullable=False, unique=True)
     extension = Column(String, nullable=False)
 
     publish = relationship("Publish", back_populates="publish_type")
@@ -103,6 +107,7 @@ class Publish(Base):
     version = Column(Integer, nullable=False, unique=True)
     release = Column(String, nullable=False)
     size = Column(Integer)
+    active = Column(Boolean)
 
     publish_type_id = Column(Integer, ForeignKey("publish_type.id"))
     task_id = Column(Integer, ForeignKey("task.id"))
