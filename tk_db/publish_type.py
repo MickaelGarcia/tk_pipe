@@ -28,14 +28,14 @@ class DbPublishType:
         return self._bc_publish_type.id
 
     @property
+    def code(self):
+        """Return publish type description."""
+        return self._bc_publish_type.code
+
+    @property
     def file_type(self):
         """Return publish type code."""
         return self._bc_publish_type.file_type
-
-    @property
-    def description(self):
-        """Return publish type description."""
-        return self._bc_publish_type.description
 
     @property
     def extension(self):

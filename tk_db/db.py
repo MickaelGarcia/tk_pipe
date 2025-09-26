@@ -14,6 +14,7 @@ from tk_db.dbproject import DbProject
 from tk_db.dbtasktype import DbTaskType
 from tk_db.errors import DbAssetTypeAlreadyExistsError
 from tk_db.errors import DbProjectAlreadyExistsError
+from tk_db.errors import DbPublishTypeAlreadyExistError
 from tk_db.errors import DbTaskTypeAlreadyExistError
 from tk_db.errors import MissingDbAssetTypeError
 from tk_db.errors import MissingDbProjectError
@@ -217,11 +218,11 @@ class Db:
 
         return self.task_type(code)
 
-    def publish_type(self, description: str) -> DbPublishType:
+    def publish_type(self, code: str) -> DbPublishType:
         """Get publish type object.
 
         Args:
-            description (str): Publish type code.
+            code (str): Publish type code.
 
         Returns:
             DbPublishType: Instance of database asset type.
@@ -231,13 +232,13 @@ class Db:
         """
         with self.Session() as session:
             publish_type_query = session.query(PublishType).where(
-                PublishType.description == description
+                PublishType.code == code
             )
             found_publish_type = publish_type_query.first()
 
         if found_publish_type is None:
             raise MissingDbPublishTypeError(
-                f"Unable to found task type with code {description!r}"
+                f"Unable to found task type with code {code!r}"
             )
 
         return DbPublishType(self, found_publish_type)
@@ -252,14 +253,14 @@ class Db:
 
     def get_or_create_publish_type(
         self,
-        description: str,
+        code: str,
         file_type: str,
         extension: str,
     ) -> DbPublishType:
         """Create new task type in database.
 
         Args:
-            description (str): Publish type description.
+            code (str): Publish type description.
             file_type (str): Publish type file type.
             extension (str): Publish type extension.
 
@@ -270,20 +271,18 @@ class Db:
             DbTaskType
         """
         try:
-            self.publish_type(description)
+            self.publish_type(code)
         except MissingDbPublishTypeError:
             with self.Session() as session:
                 publish_type_obj = PublishType(
+                    code=code,
                     file_type=file_type,
-                    description=description,
                     extension=extension,
                 )
                 session.add(publish_type_obj)
                 session.commit()
 
         else:
-            raise DbPublishTypeAlreadyExistError(
-                f"Publish type {description!r} already exists."
-            )
+            raise DbPublishTypeAlreadyExistError(f"Publish type {code!r} already exists.")
 
-        return self.publish_type(description)
+        return self.publish_type(code)

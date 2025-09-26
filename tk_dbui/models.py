@@ -140,7 +140,7 @@ class PublishTypeTableModel(qtc.QAbstractTableModel):
         publish_type = self._publish_types[index.row()]
         colum = index.column()
         column_display_role = [
-            publish_type.description,
+            publish_type.code,
             publish_type.file_type,
             publish_type.extension,
             publish_type.id,
