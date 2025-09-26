@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import override
 
 from Qt import QtWidgets as qtw
+from typing_extensions import override
 
 from tk_dbui.models import AssetTaskTypeTableModel
 from tk_dbui.models import PublishTypeTableModel
