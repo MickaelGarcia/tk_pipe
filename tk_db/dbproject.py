@@ -49,6 +49,30 @@ class DbProject:
         """Return project name."""
         return self._bc_project.name
 
+    @property
+    def metadata(self) -> dict:
+        """Return project metadata."""
+        with self.db.Session() as session:
+            project_q = session.query(Project).where(Project.code == self.code).first()
+
+        return eval(project_q.metadata_)
+
+    @metadata.setter
+    def metadata(self, value: dict):
+        """Set metadata to project."""
+        assert isinstance(value, dict)
+        with self.db.Session() as session:
+            session.query(Project).where(Project.code == self.code).update(
+                {"metadata_": str(value)}
+            )
+            session.commit()
+
+    def metadata_update(self, value: dict):
+        """Update project metadata."""
+        assert isinstance(value, dict)
+        updated = self.metadata.update(value)
+        self.metadata = updated
+
     def asset(self, asset_type: DbAssetType, asset_code: str) -> DbAsset:
         """Get specific asset in project with given asset type and code.
 
@@ -64,12 +88,9 @@ class DbProject:
         """
         with self.db.Session() as session:
             asset_query = session.query(Asset).join(Project).join(AssetType)
-            found_asset = (
-                asset_query.filter(
-                    Project.id == self.id, AssetType.id == asset_type.id
-                )
-                .where(Asset.code == asset_code)
-            )
+            found_asset = asset_query.filter(
+                Project.id == self.id, AssetType.id == asset_type.id
+            ).where(Asset.code == asset_code)
             found_asset = found_asset.first()
 
         if found_asset is None:

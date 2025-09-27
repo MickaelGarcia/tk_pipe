@@ -93,7 +93,7 @@ class Db:
             self.project(code)
         except MissingDbProjectError:
             with self.Session() as session:
-                project_obj = Project(code=code, name=name)
+                project_obj = Project(code=code, name=name, metadata_="")
 
                 session.add(project_obj)
                 session.commit()

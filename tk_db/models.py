@@ -22,6 +22,7 @@ class Project(Base):
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     code = Column(String, unique=True, nullable=False)
     name = Column(String, unique=False, nullable=False)
+    metadata_ = Column(String)
     active = Column(Boolean)
 
     asset = relationship("Asset", back_populates="project")
