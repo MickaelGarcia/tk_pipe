@@ -25,7 +25,7 @@ from tk_db.models import Base
 from tk_db.models import Project
 from tk_db.models import PublishType
 from tk_db.models import TaskType
-from tk_db.publish_type import DbPublishType
+from tk_db.dbpublishtype import DbPublishType
 
 
 if TYPE_CHECKING:

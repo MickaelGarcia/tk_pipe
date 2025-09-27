@@ -12,7 +12,7 @@ from typing_extensions import override
 if TYPE_CHECKING:
     from tk_db.dbassettype import DbAssetType
     from tk_db.dbproject import DbProject
-    from tk_db.publish_type import DbPublishType
+    from tk_db.dbpublishtype import DbPublishType
 
 ASSET_TYPE_HEADER_TITLES = ["Name", "Code", "Id"]
 PUBLISH_TYPE_HEADER_TITLES = ["Code", "File_type", "Extension", "Id"]
