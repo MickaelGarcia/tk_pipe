@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from tk_db.models import PublishType
+
 
 if TYPE_CHECKING:
     from tk_db.db import Db
-    from tk_db.models import PublishType
 
 
 class DbPublishType:
@@ -42,8 +43,7 @@ class DbPublishType:
         """Return publish type extension."""
         return self._bc_publish_type.extension
 
-    @property
-    def active(self) -> bool:
+    def is_active(self) -> bool:
         """Return if publish is active or not."""
         with  self.db.Session() as session:
             publish = session.query(PublishType).where(PublishType.id == self.id).first()

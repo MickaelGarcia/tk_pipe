@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from Qt import QtCore as qtc
+from Qt import QtWidgets as qtw
 from typing_extensions import override
 
 
@@ -14,12 +15,14 @@ if TYPE_CHECKING:
     from tk_db.dbproject import DbProject
     from tk_db.dbpublishtype import DbPublishType
 
-ASSET_TYPE_HEADER_TITLES = ["Name", "Code", "Id"]
-PUBLISH_TYPE_HEADER_TITLES = ["Code", "File_type", "Extension", "Id"]
+PROJECT_HEADER_TITLES = ["Id", "Code", "Name", "Active"]
+ASSET_TYPE_HEADER_TITLES = ["Id", "Name", "Code", "Active"]
+PUBLISH_TYPE_HEADER_TITLES = ["Id", "Code", "File_type", "Extension", "Active"]
 
 ProjectRole = qtc.Qt.UserRole + 1
 ProjectCodeRole = qtc.Qt.UserRole + 2
 EntityRole = qtc.Qt.UserRole + 3
+ActiveRole = qtc.Qt.UserRole + 4
 
 
 class ProjectListModel(qtc.QAbstractListModel):
@@ -42,6 +45,8 @@ class ProjectListModel(qtc.QAbstractListModel):
             return project
         elif role == ProjectCodeRole:
             return project.code
+        elif role == ActiveRole:
+            return project.is_active()
 
         return None
 
@@ -82,9 +87,10 @@ class AssetTaskTypeTableModel(qtc.QAbstractTableModel):
         asset_type = self._asset_types[index.row()]
         colum = index.column()
         column_display_role = [
+            asset_type.id,
             asset_type.name,
             asset_type.code,
-            asset_type.id,
+            asset_type.is_active(),
         ]
 
         if role == qtc.Qt.DisplayRole:
@@ -98,6 +104,51 @@ class AssetTaskTypeTableModel(qtc.QAbstractTableModel):
     def headerData(self, section, orientation, role = ...):
         if role == qtc.Qt.DisplayRole:
             return ASSET_TYPE_HEADER_TITLES[section]
+
+        return None
+
+    def set_asset_type(self, asset_types: list[DbAssetType]):
+        """Set asset type to model."""
+        self.beginResetModel()
+        self._asset_types = asset_types
+        self.endResetModel()
+
+    def add_asset_type(self, asset_type: DbAssetType):
+        """Add asset type in model."""
+        self.beginInsertRows(
+            qtc.QModelIndex(),
+            len(self._asset_types),
+            len(self._asset_types) + 1,
+        )
+
+        self._asset_types.append(asset_type)
+
+        self.endInsertRows()
+
+
+class AssetTaskTypeListModel(qtc.QAbstractListModel):
+    """Asset type and task type list model."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._asset_types: list[DbAssetType] = []
+
+    @override
+    def rowCount(self, parent=...):
+        return len(self._asset_types)
+
+    @override
+    def data(self, index, role=...):
+        asset_type = self._asset_types[index.row()]
+        colum = index.column()
+        column_display_role = [
+            asset_type.name,
+        ]
+
+        if role == qtc.Qt.DisplayRole:
+            return column_display_role[colum]
+        elif role == EntityRole:
+            return asset_type
 
         return None
 
@@ -140,10 +191,11 @@ class PublishTypeTableModel(qtc.QAbstractTableModel):
         publish_type = self._publish_types[index.row()]
         colum = index.column()
         column_display_role = [
+            publish_type.id,
             publish_type.code,
             publish_type.file_type,
             publish_type.extension,
-            publish_type.id,
+            publish_type.is_active(),
         ]
 
         if role == qtc.Qt.DisplayRole:
@@ -177,3 +229,24 @@ class PublishTypeTableModel(qtc.QAbstractTableModel):
         self._publish_types.append(publish_type)
 
         self.endInsertRows()
+
+
+class CheckBoxDelegate(qtw.QStyledItemDelegate):
+    """Active checkbox."""
+
+    @override
+    def createEditor(self, parent, option, index):
+        editor = qtw.QCheckBox(parent)
+        model = index.model()
+        item = model.data(index, role=ActiveRole)
+        editor.setChecked(item)
+
+        return editor
+
+    @override
+    def setModelData(self, editor: qtw.QCheckBox, model, index):
+        model.setData(index, editor.isChecked(), ActiveRole)
+
+    @override
+    def updateEditorGeometry(self, editor, option, index):
+        editor.setGeometry(option.rect)

@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from tk_db.models import AssetType
+
 
 if TYPE_CHECKING:
     from tk_db.db import Db
-    from tk_db.models import AssetType
 
 
 class DbAssetType:

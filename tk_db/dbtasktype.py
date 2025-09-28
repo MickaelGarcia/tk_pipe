@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from tk_db.models import TaskType
+
 
 if TYPE_CHECKING:
     from tk_db.db import Db
-    from tk_db.models import TaskType
 
 
 class DbTaskType:
@@ -40,8 +41,7 @@ class DbTaskType:
         """Return task name."""
         return self._bc_task.name
 
-    @property
-    def active(self) -> bool:
+    def is_active(self) -> bool:
         """Return if publish is active or not."""
         with  self.db.Session() as session:
             publish = session.query(TaskType).where(TaskType.id == self.id).first()
