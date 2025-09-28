@@ -21,6 +21,10 @@ class MissingDbTaskError(Exception):
 class MissingDbPublishTypeError(Exception):
     """Raised when publish type do not exist in database."""
 
+
+class MissingDbPublishError(Exception):
+    """Raised when publish do not exist in database."""
+
 class DbProjectAlreadyExistsError(Exception):
     """Raised when trying to create project that already exist."""
 
