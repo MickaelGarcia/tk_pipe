@@ -39,3 +39,18 @@ class DbAssetType:
     def name(self) -> str:
         """Return asset type name."""
         return self._bc_asset_type.name
+
+    def is_active(self) -> bool:
+        """Get if project is active."""
+        with self.db.Session() as session:
+            project = session.query(AssetType).where(AssetType.id == self.id).first()
+            active =  project.active
+
+        return active
+
+    def set_active(self, value: bool):
+        """Set project active or not."""
+        with self.db.Session() as session:
+            project = session.query(AssetType).where(AssetType.id == self.id).first()
+            project.active = value
+            session.commit()

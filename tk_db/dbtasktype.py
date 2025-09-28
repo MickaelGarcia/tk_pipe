@@ -39,3 +39,19 @@ class DbTaskType:
     def name(self):
         """Return task name."""
         return self._bc_task.name
+
+    @property
+    def active(self) -> bool:
+        """Return if publish is active or not."""
+        with  self.db.Session() as session:
+            publish = session.query(TaskType).where(TaskType.id == self.id).first()
+            active = publish.active
+
+        return active
+
+    def set_active(self, value):
+        """Set publish active or not."""
+        with self.db.Session as session:
+            publish = session.query(TaskType).where(TaskType.id == self.id).first()
+            publish.active = value
+            session.commit()

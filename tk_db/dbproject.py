@@ -81,6 +81,21 @@ class DbProject:
         updated = self.metadata.update(value)
         self.metadata = updated
 
+    def is_active(self) -> bool:
+        """Get if project is active."""
+        with self.db.Session() as session:
+            project = session.query(Project).where(Project.id == self.id).first()
+            active =  project.active
+
+        return active
+
+    def set_active(self, value: bool):
+        """Set project active or not."""
+        with self.db.Session() as session:
+            project = session.query(Project).where(Project.id == self.id).first()
+            project.active = value
+            session.commit()
+
     def asset(self, asset_type: DbAssetType, asset_code: str) -> DbAsset:
         """Get specific asset in project with given asset type and code.
 

@@ -47,6 +47,23 @@ class DbTask:
         """Return task type name."""
         return self.task_type.name
 
+    @property
+    def active(self) -> bool:
+        """Return if publish is active or not."""
+        with  self.asset.project.db.Session() as session:
+            publish = session.query(Task).where(Task.id == self.id).first()
+            active = publish.active
+
+        return active
+
+    def set_active(self, value):
+        """Set publish active or not."""
+        with self.asset.project.db.Session as session:
+            publish = session.query(Task).where(Task.id == self.id).first()
+            publish.active = value
+            session.commit()
+
+
     def publish(
         self,
         code: str,

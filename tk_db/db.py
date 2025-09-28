@@ -91,7 +91,7 @@ class Db:
             self.project(code)
         except MissingDbProjectError:
             with self.Session() as session:
-                project_obj = Project(code=code, name=name, metadata_="")
+                project_obj = Project(code=code, name=name, metadata_="", active=True)
 
                 session.add(project_obj)
                 session.commit()
@@ -155,7 +155,7 @@ class Db:
             self.asset_type(code)
         except MissingDbAssetTypeError:
             with self.Session() as session:
-                asset_type_obj = AssetType(code=code, name=name)
+                asset_type_obj = AssetType(code=code, name=name, active=True)
                 session.add(asset_type_obj)
                 session.commit()
 
@@ -216,7 +216,7 @@ class Db:
             self.task_type(code)
         except MissingDbTaskTypeError:
             with self.Session() as session:
-                task_type_obj = TaskType(code=code, name=name)
+                task_type_obj = TaskType(code=code, name=name, active=True)
                 session.add(task_type_obj)
                 session.commit()
 
@@ -291,6 +291,7 @@ class Db:
                     code=code,
                     file_type=file_type,
                     extension=extension,
+                    active=True
                 )
                 session.add(publish_type_obj)
                 session.commit()

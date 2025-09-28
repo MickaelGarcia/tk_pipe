@@ -56,11 +56,11 @@ class DbPublish:
     @property
     def active(self) -> bool:
         """Return if publish is active or not."""
-        session_obj = self.task.asset.project.db.Session
-        with session_obj() as session:
+        with  self.task.asset.project.db.Session() as session:
             publish = session.query(Publish).where(Publish.id == self.id).first()
+            active = publish.active
 
-        return publish.active
+        return active
 
     def set_active(self, value):
         """Set publish active or not."""
