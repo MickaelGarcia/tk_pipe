@@ -105,7 +105,7 @@ class Publish(Base):
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     code = Column(String, nullable=False)
     path = Column(String, nullable=False, unique=True)
-    version = Column(Integer, nullable=False, unique=True)
+    version = Column(Integer, nullable=False)
     release = Column(String, nullable=False)
     size = Column(Integer)
     active = Column(Boolean)
