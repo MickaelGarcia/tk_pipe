@@ -40,12 +40,12 @@ class DbAsset:
         return f"DbAsset({self.code} - {self.id})"
 
     @property
-    def id(self):
+    def id(self) -> int:
         """Return asset id."""
         return self._bc_asset.id
 
     @property
-    def code(self):
+    def code(self) -> str:
         """Return asset code."""
         return self._bc_asset.code
 
@@ -88,8 +88,13 @@ class DbAsset:
 
         return DbTask(found_task, task_type, self)
 
-    def tasks(self):
-        """Get all tasks of asset."""
+    def tasks(self) -> list[DbTask]:
+        """Get all tasks of asset.
+
+        Returns:
+            list[DbTask]
+        """
+        tasks = []
         with self.project.db.Session() as session:
             task_query = session.query(Task).where(Task.asset_id == self.id)
             for task in task_query:
@@ -98,7 +103,9 @@ class DbAsset:
                     .where(TaskType.id == task.task_type_id)
                     .first()
                 )
-                yield DbTask(task, task_type, self)
+                tasks.append(DbTask(task, task_type, self))
+
+        return tasks
 
     def get_or_create_task(
         self,

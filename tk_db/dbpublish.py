@@ -24,42 +24,43 @@ class DbPublish:
         self._bc_publish = publish
 
     @property
-    def id(self):
+    def id(self) -> int:
         """Return publish type id."""
         return self._bc_publish.id
 
     @property
-    def code(self):
+    def code(self) -> str:
         """Return publish type description."""
         return self._bc_publish.code
 
     @property
-    def path(self):
+    def path(self) -> str:
         """Return publish type code."""
         return self._bc_publish.path
 
     @property
-    def version(self):
+    def version(self) -> int:
         """Return publish type extension."""
         return self._bc_publish.version
 
     @property
-    def release(self):
+    def release(self) -> str:
         """Return if publish is release or work."""
         return self._bc_publish.release
 
     @property
-    def size(self):
+    def size(self) -> float:
         """Return size of publish file."""
         return self._bc_publish.size
 
     @property
-    def active(self):
+    def active(self) -> bool:
         """Return if publish is active or not."""
         session_obj = self.task.asset.project.db.Session
         with session_obj() as session:
             publish = session.query(Publish).where(Publish.id == self.id).first()
-            return publish.active
+
+        return publish.active
 
     def set_active(self, value):
         """Set publish active or not."""

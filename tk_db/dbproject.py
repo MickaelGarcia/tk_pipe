@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 
 from tk_db.dbasset import DbAsset
 from tk_db.dbassettype import DbAssetType
@@ -14,7 +15,6 @@ from tk_db.models import Project
 
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
 
     from tk_db.db import Db
 
@@ -35,17 +35,17 @@ class DbProject:
         return f"DbProject({self.code} - {self.id})"
 
     @property
-    def id(self):
+    def id(self) -> int:
         """Return project id."""
         return self._bc_project.id
 
     @property
-    def code(self):
+    def code(self) -> str:
         """Return project code."""
         return self._bc_project.code
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Return project name."""
         return self._bc_project.name
 
@@ -58,8 +58,12 @@ class DbProject:
         return eval(project_q.metadata_)
 
     @metadata.setter
-    def metadata(self, value: dict):
-        """Set metadata to project."""
+    def metadata(self, value: dict[str, Any]):
+        """Set metadata to project.
+
+        Args:
+            value (dict[str, Any]): Project metadata like environment, root path ect.
+        """
         assert isinstance(value, dict)
         with self.db.Session() as session:
             session.query(Project).where(Project.code == self.code).update(
@@ -68,7 +72,11 @@ class DbProject:
             session.commit()
 
     def metadata_update(self, value: dict):
-        """Update project metadata."""
+        """Update project metadata.
+
+        Args:
+            value (dict[str, Any]): Project metadata like environment, root path ect.
+        """
         assert isinstance(value, dict)
         updated = self.metadata.update(value)
         self.metadata = updated
@@ -98,8 +106,9 @@ class DbProject:
 
         return DbAsset(found_asset, asset_type, self)
 
-    def assets(self) -> Iterator[DbAsset]:
+    def assets(self) -> list[DbAsset]:
         """Return assets in project."""
+        assets = []
         with self.db.Session() as session:
             assets_query = session.query(Asset).join(Project)
 
@@ -110,7 +119,9 @@ class DbProject:
                     .first()
                 )
                 asset_type = DbAssetType(self.db, asset_type_query)
-                yield DbAsset(asset, asset_type, self)
+                assets.append(DbAsset(asset, asset_type, self))
+
+        return assets
 
     def get_or_create_asset(
         self,

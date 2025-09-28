@@ -36,6 +36,6 @@ class DbAssetType:
         return self._bc_asset_type.code
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Return asset type name."""
         return self._bc_asset_type.name

@@ -4,13 +4,12 @@ from __future__ import annotations
 
 import os
 
-from typing import TYPE_CHECKING
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from tk_db.dbassettype import DbAssetType
 from tk_db.dbproject import DbProject
+from tk_db.dbpublishtype import DbPublishType
 from tk_db.dbtasktype import DbTaskType
 from tk_db.errors import DbAssetTypeAlreadyExistsError
 from tk_db.errors import DbProjectAlreadyExistsError
@@ -25,11 +24,6 @@ from tk_db.models import Base
 from tk_db.models import Project
 from tk_db.models import PublishType
 from tk_db.models import TaskType
-from tk_db.dbpublishtype import DbPublishType
-
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
 
 
 class Db:
@@ -66,13 +60,17 @@ class Db:
 
         return DbProject(self, found_project)
 
-    def projects(self) -> Iterator[DbProject]:
-        """Get all projects in database."""
+    def projects(self) -> list[DbProject]:
+        """Get all projects in database.
+
+        Returns:
+            list[DbProject]
+        """
         with self.Session() as session:
             project_query = session.query(Project)
+            projects = [DbProject(self, project) for project in project_query]
 
-        for project in project_query:
-            yield DbProject(self, project)
+        return projects
 
     def create_project(self, code: str, name: str) -> DbProject:
         """Create new project in database project table.
@@ -127,12 +125,19 @@ class Db:
 
         return DbAssetType(self, found_asset_type)
 
-    def asset_types(self):
-        """Get all asset type table."""
+    def asset_types(self) -> list[DbAssetType]:
+        """Get all asset type table.
+
+        Returns:
+            list[DbAssetType
+        """
         with self.Session() as session:
             asset_type_query = session.query(AssetType)
-            for asset_type in asset_type_query:
-                yield DbAssetType(self, asset_type)
+            asset_types = [
+                DbAssetType(self, asset_type) for asset_type in asset_type_query
+            ]
+
+        return asset_types
 
     def get_or_create_asset_type(self, code: str, name: str) -> DbAssetType:
         """Create new asset type in database asset_type table.
@@ -182,13 +187,17 @@ class Db:
 
         return DbTaskType(self, found_task_type)
 
-    def task_types(self):
-        """Return all task types table."""
+    def task_types(self) -> list[DbTaskType]:
+        """Return all task types table.
+
+        Returns:
+            list[DbAssetType]
+        """
         with self.Session() as session:
             tasks_query = session.query(TaskType)
+            task_types = [DbTaskType(self, task) for task in tasks_query]
 
-        for task in tasks_query:
-            yield DbTaskType(self, task)
+        return task_types
 
     def get_or_create_task_type(self, code: str, name: str) -> DbTaskType:
         """Create new task type in database.
@@ -243,13 +252,17 @@ class Db:
 
         return DbPublishType(self, found_publish_type)
 
-    def publish_types(self):
-        """Return all publish types table."""
+    def publish_types(self) -> list[DbPublishType]:
+        """Return all publish types table.
+
+        Returns:
+            list[DbPublishType]
+        """
         with self.Session() as session:
             publishs_query = session.query(PublishType)
+            publish_types = [DbPublishType(self, publish) for publish in publishs_query]
 
-        for publish in publishs_query:
-            yield DbPublishType(self, publish)
+        return publish_types
 
     def get_or_create_publish_type(
         self,
