@@ -90,18 +90,40 @@ class AssetTaskTypeTableModel(qtc.QAbstractTableModel):
             asset_type.id,
             asset_type.name,
             asset_type.code,
-            asset_type.is_active(),
         ]
 
-        if role == qtc.Qt.DisplayRole:
+        if role == qtc.Qt.DisplayRole and colum < len(column_display_role):
             return column_display_role[colum]
         elif role == EntityRole:
             return asset_type
+        elif role == qtc.Qt.CheckStateRole and colum == 3:
+            return qtc.Qt.Checked if asset_type.is_active() else qtc.Qt.Unchecked
 
         return None
 
     @override
-    def headerData(self, section, orientation, role = ...):
+    def setData(self, index, value, role = ...):
+        asset_type = self._asset_types[index.row()]
+        column = index.column()
+        if role == qtc.Qt.CheckStateRole and column == 3:
+            asset_type.set_active(bool(value))
+            self.dataChanged.emit(index, index)
+            return True
+
+        return False
+
+    @override
+    def flags(self, index):
+        flags = super().flags(index)
+        col = index.column()
+
+        if col == 3:
+            flags |= qtc.Qt.ItemIsUserCheckable
+
+        return flags
+
+    @override
+    def headerData(self, section, orientation, role=...):
         if role == qtc.Qt.DisplayRole:
             return ASSET_TYPE_HEADER_TITLES[section]
 
@@ -202,11 +224,13 @@ class PublishTypeTableModel(qtc.QAbstractTableModel):
             return column_display_role[colum]
         elif role == EntityRole:
             return publish_type
+        elif role == qtc.Qt.CheckStateRole and colum == 4:
+            return qtc.Qt.Checked if column_display_role[4] else qtc.Qt.Unchecked
 
         return None
 
     @override
-    def headerData(self, section, orientation, role = ...):
+    def headerData(self, section, orientation, role=...):
         if role == qtc.Qt.DisplayRole:
             return PUBLISH_TYPE_HEADER_TITLES[section]
 
@@ -231,7 +255,7 @@ class PublishTypeTableModel(qtc.QAbstractTableModel):
         self.endInsertRows()
 
 
-class CheckBoxDelegate(qtw.QStyledItemDelegate):
+class ActiveCheckBoxDelegate(qtw.QStyledItemDelegate):
     """Active checkbox."""
 
     @override
@@ -242,6 +266,12 @@ class CheckBoxDelegate(qtw.QStyledItemDelegate):
         editor.setChecked(item)
 
         return editor
+
+    @override
+    def setEditorData(self, editor, index):
+        model = index.model()
+        item = model.data(index, role=ActiveRole)
+        editor.setChecked(item)
 
     @override
     def setModelData(self, editor: qtw.QCheckBox, model, index):

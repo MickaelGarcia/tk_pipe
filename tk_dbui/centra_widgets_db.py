@@ -11,7 +11,6 @@ from typing_extensions import override
 
 from tk_const import c_db
 from tk_dbui.models import AssetTaskTypeTableModel
-from tk_dbui.models import CheckBoxDelegate
 from tk_dbui.models import PublishTypeTableModel
 
 
@@ -27,14 +26,6 @@ class AssetTypeTable(qtw.QWidget):
         self._app = app
 
         self._tbl_asset_type = qtw.QTableView(self)
-        self._tbl_asset_type.setItemDelegateForColumn(
-            3, CheckBoxDelegate(self._tbl_asset_type)
-        )
-        self._tbl_asset_type.setEditTriggers(
-            qtw.QAbstractItemView.EditTrigger.DoubleClicked
-            | qtw.QAbstractItemView.EditTrigger.SelectedClicked
-        )
-
         self._tbl_asset_type.verticalHeader().hide()
         self._asset_type_model = AssetTaskTypeTableModel()
         self._tbl_asset_type.setModel(self._asset_type_model)
