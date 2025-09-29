@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from tk_db.dbentity import DbEntity
 from tk_db.models import AssetType
 
 
@@ -11,7 +12,7 @@ if TYPE_CHECKING:
     from tk_db.db import Db
 
 
-class DbAssetType:
+class DbAssetType(DbEntity):
     """Database asset type object.
 
     Args:
@@ -20,32 +21,19 @@ class DbAssetType:
     """
 
     def __init__(self, db: Db, asset_type: AssetType):
+        super().__init__(asset_type)
         self.db = db
-        self._bc_asset_type = asset_type
-
-    def __repr__(self):
-        return f"DbAssetType({self.code} - {self.id})"
-
-    @property
-    def id(self) -> int:
-        """Return asset type id."""
-        return self._bc_asset_type.id
-
-    @property
-    def code(self) -> str:
-        """Return asset type code."""
-        return self._bc_asset_type.code
 
     @property
     def name(self) -> str:
         """Return asset type name."""
-        return self._bc_asset_type.name
+        return self._bc_entity.name
 
     def is_active(self) -> bool:
         """Get if project is active."""
         with self.db.Session() as session:
             project = session.query(AssetType).where(AssetType.id == self.id).first()
-            active =  project.active
+            active = project.active
 
         return active
 

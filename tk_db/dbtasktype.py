@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from tk_db.dbentity import DbEntity
 from tk_db.models import TaskType
 
 
@@ -11,7 +12,7 @@ if TYPE_CHECKING:
     from tk_db.db import Db
 
 
-class DbTaskType:
+class DbTaskType(DbEntity):
     """Database task type object.
 
     Args:
@@ -20,26 +21,13 @@ class DbTaskType:
     """
 
     def __init__(self, db: Db, task: TaskType):
+        super().__init__(task)
         self.db = db
-        self._bc_task = task
-
-    def __repr__(self):
-        return f"TaskType({self.code} - {self.id})"
-
-    @property
-    def id(self):
-        """Return task id."""
-        return self._bc_task.id
-
-    @property
-    def code(self):
-        """Return task code."""
-        return self._bc_task.code
 
     @property
     def name(self):
         """Return task name."""
-        return self._bc_task.name
+        return self._bc_entity.name
 
     def is_active(self) -> bool:
         """Return if publish is active or not."""

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from tk_db.dbentity import DbEntity
 from tk_db.dbtask import DbTask
 from tk_db.errors import MissingDbTaskError
 from tk_db.models import Asset
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
     from tk_db.dbtasktype import DbTaskType
 
 
-class DbAsset:
+class DbAsset(DbEntity):
     """Database asset object.
 
     Args:
@@ -32,22 +33,9 @@ class DbAsset:
         asset_type: DbAssetType,
         project: DbProject,
     ):
+        super().__init__(asset)
         self.project = project
         self.asset_type = asset_type
-        self._bc_asset = asset
-
-    def __repr__(self):
-        return f"DbAsset({self.code} - {self.id})"
-
-    @property
-    def id(self) -> int:
-        """Return asset id."""
-        return self._bc_asset.id
-
-    @property
-    def code(self) -> str:
-        """Return asset code."""
-        return self._bc_asset.code
 
     def task(
         self, task_type: DbTaskType | None = None, code: str | None = None
@@ -67,11 +55,7 @@ class DbAsset:
         """
         with self.project.db.Session() as session:
             if task_type is None and code is not None:
-                task_type = (
-                    session.query(TaskType)
-                    .where(TaskType.code == code)
-                    .first()
-                )
+                task_type = session.query(TaskType).where(TaskType.code == code).first()
 
             if task_type is None:
                 raise ValueError("No code found from given task_type of code.")

@@ -7,6 +7,7 @@ from typing import Any
 
 from tk_db.dbasset import DbAsset
 from tk_db.dbassettype import DbAssetType
+from tk_db.dbentity import DbEntity
 from tk_db.errors import DbAssetAlreadyExistError
 from tk_db.errors import MissingDbAssetError
 from tk_db.models import Asset
@@ -15,11 +16,10 @@ from tk_db.models import Project
 
 
 if TYPE_CHECKING:
-
     from tk_db.db import Db
 
 
-class DbProject:
+class DbProject(DbEntity):
     """Database project object.
 
     Args:
@@ -28,26 +28,13 @@ class DbProject:
     """
 
     def __init__(self, db: Db, project: Project):
+        super().__init__(project)
         self.db = db
-        self._bc_project = project
-
-    def __repr__(self):
-        return f"DbProject({self.code} - {self.id})"
-
-    @property
-    def id(self) -> int:
-        """Return project id."""
-        return self._bc_project.id
-
-    @property
-    def code(self) -> str:
-        """Return project code."""
-        return self._bc_project.code
 
     @property
     def name(self) -> str:
         """Return project name."""
-        return self._bc_project.name
+        return self._bc_entity.name
 
     @property
     def metadata(self) -> dict:
@@ -85,7 +72,7 @@ class DbProject:
         """Get if project is active."""
         with self.db.Session() as session:
             project = session.query(Project).where(Project.id == self.id).first()
-            active =  project.active
+            active = project.active
 
         return active
 

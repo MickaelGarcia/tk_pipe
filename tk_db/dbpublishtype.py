@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from tk_db.dbentity import DbEntity
 from tk_db.models import PublishType
 
 
@@ -11,7 +12,7 @@ if TYPE_CHECKING:
     from tk_db.db import Db
 
 
-class DbPublishType:
+class DbPublishType(DbEntity):
     """Database publish type object.
 
     Args:
@@ -20,28 +21,18 @@ class DbPublishType:
     """
 
     def __init__(self, db: Db, publish_type: PublishType):
+        super().__init__(publish_type)
         self.db = db
-        self._bc_publish_type = publish_type
-
-    @property
-    def id(self):
-        """Return publish type id."""
-        return self._bc_publish_type.id
-
-    @property
-    def code(self):
-        """Return publish type description."""
-        return self._bc_publish_type.code
 
     @property
     def file_type(self):
         """Return publish type code."""
-        return self._bc_publish_type.file_type
+        return self._bc_entity.file_type
 
     @property
     def extension(self):
         """Return publish type extension."""
-        return self._bc_publish_type.extension
+        return self._bc_entity.extension
 
     def is_active(self) -> bool:
         """Return if publish is active or not."""

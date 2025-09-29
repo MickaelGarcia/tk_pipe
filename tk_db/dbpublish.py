@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from tk_db.dbentity import DbEntity
 from tk_db.models import Publish
 
 
@@ -11,7 +12,7 @@ if TYPE_CHECKING:
     from tk_db.dbtask import DbTask
 
 
-class DbPublish:
+class DbPublish(DbEntity):
     """Database publish object.
 
     Args:
@@ -20,38 +21,28 @@ class DbPublish:
     """
 
     def __init__(self, task: DbTask, publish: Publish):
+        super().__init__(publish)
         self.task = task
-        self._bc_publish = publish
-
-    @property
-    def id(self) -> int:
-        """Return publish type id."""
-        return self._bc_publish.id
-
-    @property
-    def code(self) -> str:
-        """Return publish type description."""
-        return self._bc_publish.code
 
     @property
     def path(self) -> str:
         """Return publish type code."""
-        return self._bc_publish.path
+        return self._bc_entity.path
 
     @property
     def version(self) -> int:
         """Return publish type extension."""
-        return self._bc_publish.version
+        return self._bc_entity.version
 
     @property
     def release(self) -> str:
         """Return if publish is release or work."""
-        return self._bc_publish.release
+        return self._bc_entity.release
 
     @property
     def size(self) -> float:
         """Return size of publish file."""
-        return self._bc_publish.size
+        return self._bc_entity.size
 
     @property
     def active(self) -> bool:

@@ -6,6 +6,7 @@ import os
 
 from typing import TYPE_CHECKING
 
+from tk_db.dbentity import DbEntity
 from tk_db.dbpublish import DbPublish
 from tk_db.errors import MissingDbPublishError
 from tk_db.models import Publish
@@ -21,21 +22,18 @@ if TYPE_CHECKING:
     from tk_db.dbtasktype import DbTaskType
 
 
-class DbTask:
+class DbTask(DbEntity):
     """Database task object."""
 
     def __init__(self, task: Task, task_type: DbTaskType, asset: DbAsset):
+        super().__init__(task)
         self.asset = asset
         self.task_type = task_type
-        self._bc_task = task
-
-    def __repr__(self):
-        return f"DbTask({self.asset.code} - {self.name} - {self.id})"
 
     @property
     def id(self):
         """Return task id."""
-        return self._bc_task.id
+        return self._bc_entity.id
 
     @property
     def code(self):
@@ -50,7 +48,7 @@ class DbTask:
     @property
     def active(self) -> bool:
         """Return if publish is active or not."""
-        with  self.asset.project.db.Session() as session:
+        with self.asset.project.db.Session() as session:
             publish = session.query(Task).where(Task.id == self.id).first()
             active = publish.active
 
@@ -62,7 +60,6 @@ class DbTask:
             publish = session.query(Task).where(Task.id == self.id).first()
             publish.active = value
             session.commit()
-
 
     def publish(
         self,
