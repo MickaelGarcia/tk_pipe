@@ -10,8 +10,9 @@ from Qt import QtWidgets as qtw
 from typing_extensions import override
 
 from tk_const import c_db
-from tk_dbui.models import AssetTaskTypeTableModel
-from tk_dbui.models import PublishTypeTableModel
+from tk_db.models import AssetType
+from tk_db.models import PublishType
+from tk_dbui.models import EntityTableModel
 
 
 if TYPE_CHECKING:
@@ -27,7 +28,7 @@ class AssetTypeTable(qtw.QWidget):
 
         self._tbl_asset_type = qtw.QTableView(self)
         self._tbl_asset_type.verticalHeader().hide()
-        self._asset_type_model = AssetTaskTypeTableModel()
+        self._asset_type_model = EntityTableModel(AssetType)
         self._tbl_asset_type.setModel(self._asset_type_model)
 
         btn_add_asset_type = qtw.QPushButton("Add")
@@ -56,12 +57,12 @@ class AssetTypeTable(qtw.QWidget):
         name = dlg.name.text()
         if not code or not name:
             return
-        self._app.db.get_or_create_asset_type(dlg.code.text(), dlg.name.text())
-        self.refresh()
+        entity = self._app.db.get_or_create_asset_type(dlg.code.text(), dlg.name.text())
+        self._asset_type_model.add_entity(entity)
 
     def refresh(self):
         """Refresh ui content."""
-        self._asset_type_model.set_asset_type(list(self._app.db.asset_types()))
+        self._asset_type_model.set_entities(list(self._app.db.asset_types()))
 
 
 class TaskTypeTable(AssetTypeTable):
@@ -76,12 +77,12 @@ class TaskTypeTable(AssetTypeTable):
         name = dlg.name.text()
         if not code or not name:
             return
-        self._app.db.get_or_create_task_type(dlg.code.text(), dlg.name.text())
-        self.refresh()
+        entity = self._app.db.get_or_create_task_type(dlg.code.text(), dlg.name.text())
+        self._asset_type_model.add_entity(entity)
 
     @override
     def refresh(self):
-        self._asset_type_model.set_asset_type(list(self._app.db.task_types()))
+        self._asset_type_model.set_entities(list(self._app.db.task_types()))
 
 
 class AddAssetTaskTypeDialog(qtw.QDialog):
@@ -135,7 +136,7 @@ class PublishTypeTable(qtw.QWidget):
 
         self._tbl_publish_type = qtw.QTableView(self)
         self._tbl_publish_type.verticalHeader().hide()
-        self._publish_type_model = PublishTypeTableModel()
+        self._publish_type_model = EntityTableModel(PublishType)
         self._tbl_publish_type.setModel(self._publish_type_model)
 
         btn_add_publish_type = qtw.QPushButton("Add")
@@ -156,4 +157,4 @@ class PublishTypeTable(qtw.QWidget):
 
     def refresh(self):
         """Refresh ui content."""
-        self._publish_type_model.set_publish_types(list(self._app.db.publish_types()))
+        self._publish_type_model.set_entities(list(self._app.db.publish_types()))

@@ -6,23 +6,24 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from Qt import QtCore as qtc
-from Qt import QtWidgets as qtw
 from typing_extensions import override
 
 
 if TYPE_CHECKING:
-    from tk_db.dbassettype import DbAssetType
+    from tk_db.dbentity import DbEntity
     from tk_db.dbproject import DbProject
-    from tk_db.dbpublishtype import DbPublishType
+    from tk_db.models import Base
+
 
 PROJECT_HEADER_TITLES = ["Id", "Code", "Name", "Active"]
 ASSET_TYPE_HEADER_TITLES = ["Id", "Name", "Code", "Active"]
 PUBLISH_TYPE_HEADER_TITLES = ["Id", "Code", "File_type", "Extension", "Active"]
 
-ProjectRole = qtc.Qt.UserRole + 1
-ProjectCodeRole = qtc.Qt.UserRole + 2
-EntityRole = qtc.Qt.UserRole + 3
-ActiveRole = qtc.Qt.UserRole + 4
+EntityRole = qtc.Qt.UserRole + 1
+CodeRole = qtc.Qt.UserRole + 2
+ActiveRole = qtc.Qt.UserRole + 3
+ProjectRole = qtc.Qt.UserRole + 4
+ProjectCodeRole = qtc.Qt.UserRole + 5
 
 
 class ProjectListModel(qtc.QAbstractListModel):
@@ -67,45 +68,44 @@ class ProjectListModel(qtc.QAbstractListModel):
         self.endInsertRows()
 
 
-class AssetTaskTypeTableModel(qtc.QAbstractTableModel):
+class EntityTableModel(qtc.QAbstractTableModel):
     """Asset type and task type table model."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, entity_type: type[Base], *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._asset_types: list[DbAssetType] = []
+        self._entity_type = entity_type
+        self._entities = []
+        self._column_names = self._entity_type.__table__.columns.keys()
 
     @override
     def rowCount(self, parent=...):
-        return len(self._asset_types)
+        return len(self._entities)
 
     @override
     def columnCount(self, parent=...):
-        return len(ASSET_TYPE_HEADER_TITLES)
+        return len(self._column_names)
 
     @override
     def data(self, index, role=...):
-        asset_type = self._asset_types[index.row()]
-        colum = index.column()
-        column_display_role = [
-            asset_type.id,
-            asset_type.name,
-            asset_type.code,
-        ]
+        entity = self._entities[index.row()]
+        column = index.column()
+        column_name = self._column_names[column]
 
-        if role == qtc.Qt.DisplayRole and colum < len(column_display_role):
-            return column_display_role[colum]
+        if role == qtc.Qt.DisplayRole and column_name != "active":
+            return getattr(entity, column_name)
         elif role == EntityRole:
-            return asset_type
-        elif role == qtc.Qt.CheckStateRole and colum == 3:
-            return qtc.Qt.Checked if asset_type.is_active() else qtc.Qt.Unchecked
+            return entity
+        elif role == qtc.Qt.CheckStateRole and column_name == "active":
+            return qtc.Qt.Checked if entity.is_active() else qtc.Qt.Unchecked
 
         return None
 
     @override
-    def setData(self, index, value, role = ...):
-        asset_type = self._asset_types[index.row()]
+    def setData(self, index, value, role=...):
+        asset_type = self._entities[index.row()]
         column = index.column()
-        if role == qtc.Qt.CheckStateRole and column == 3:
+        column_name = self._column_names[column]
+        if role == qtc.Qt.CheckStateRole and column_name == "active":
             asset_type.set_active(bool(value))
             self.dataChanged.emit(index, index)
             return True
@@ -125,158 +125,67 @@ class AssetTaskTypeTableModel(qtc.QAbstractTableModel):
     @override
     def headerData(self, section, orientation, role=...):
         if role == qtc.Qt.DisplayRole:
-            return ASSET_TYPE_HEADER_TITLES[section]
+            return self._column_names[section].capitalize()
 
         return None
 
-    def set_asset_type(self, asset_types: list[DbAssetType]):
+    def set_entities(self, entities: list[DbEntity]):
         """Set asset type to model."""
         self.beginResetModel()
-        self._asset_types = asset_types
+        self._entities = entities
         self.endResetModel()
 
-    def add_asset_type(self, asset_type: DbAssetType):
+    def add_entity(self, entity: DbEntity):
         """Add asset type in model."""
         self.beginInsertRows(
             qtc.QModelIndex(),
-            len(self._asset_types),
-            len(self._asset_types) + 1,
+            len(self._entities),
+            len(self._entities) + 1,
         )
 
-        self._asset_types.append(asset_type)
+        self._entities.append(entity)
 
         self.endInsertRows()
 
 
-class AssetTaskTypeListModel(qtc.QAbstractListModel):
+class EntityListModel(qtc.QAbstractListModel):
     """Asset type and task type list model."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, entity_type: type[Base], *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._asset_types: list[DbAssetType] = []
+        self._entities: list[DbEntity] = []
+        self._entity_type = entity_type
+        self._column_names = self._entity_type.__table__.columns.keys()
 
     @override
     def rowCount(self, parent=...):
-        return len(self._asset_types)
+        return len(self._entities)
 
     @override
     def data(self, index, role=...):
-        asset_type = self._asset_types[index.row()]
-        colum = index.column()
-        column_display_role = [
-            asset_type.name,
-        ]
+        entity = self._entities[index.row()]
 
         if role == qtc.Qt.DisplayRole:
-            return column_display_role[colum]
+            return entity.name
         elif role == EntityRole:
-            return asset_type
+            return entity
 
         return None
 
-    def set_asset_type(self, asset_types: list[DbAssetType]):
+    def set_entities(self, entities: list[DbEntity]):
         """Set asset type to model."""
         self.beginResetModel()
-        self._asset_types = asset_types
+        self._entities = entities
         self.endResetModel()
 
-    def add_asset_type(self, asset_type: DbAssetType):
+    def add_entity(self, entity: DbEntity):
         """Add asset type in model."""
         self.beginInsertRows(
             qtc.QModelIndex(),
-            len(self._asset_types),
-            len(self._asset_types) + 1,
+            len(self._entities),
+            len(self._entities) + 1,
         )
 
-        self._asset_types.append(asset_type)
+        self._entities.append(entity)
 
         self.endInsertRows()
-
-
-class PublishTypeTableModel(qtc.QAbstractTableModel):
-    """Publish type table model."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._publish_types: list[DbPublishType] = []
-
-    @override
-    def rowCount(self, parent=...):
-        return len(self._publish_types)
-
-    @override
-    def columnCount(self, parent=...):
-        return len(PUBLISH_TYPE_HEADER_TITLES)
-
-    @override
-    def data(self, index, role=...):
-        publish_type = self._publish_types[index.row()]
-        colum = index.column()
-        column_display_role = [
-            publish_type.id,
-            publish_type.code,
-            publish_type.file_type,
-            publish_type.extension,
-            publish_type.is_active(),
-        ]
-
-        if role == qtc.Qt.DisplayRole:
-            return column_display_role[colum]
-        elif role == EntityRole:
-            return publish_type
-        elif role == qtc.Qt.CheckStateRole and colum == 4:
-            return qtc.Qt.Checked if column_display_role[4] else qtc.Qt.Unchecked
-
-        return None
-
-    @override
-    def headerData(self, section, orientation, role=...):
-        if role == qtc.Qt.DisplayRole:
-            return PUBLISH_TYPE_HEADER_TITLES[section]
-
-        return None
-
-    def set_publish_types(self, publish_types: list[DbPublishType]):
-        """Set asset type to model."""
-        self.beginResetModel()
-        self._publish_types = publish_types
-        self.endResetModel()
-
-    def add_publish_type(self, publish_type: DbPublishType):
-        """Add asset type in model."""
-        self.beginInsertRows(
-            qtc.QModelIndex(),
-            len(self._publish_types),
-            len(self._publish_types) + 1,
-        )
-
-        self._publish_types.append(publish_type)
-
-        self.endInsertRows()
-
-
-class ActiveCheckBoxDelegate(qtw.QStyledItemDelegate):
-    """Active checkbox."""
-
-    @override
-    def createEditor(self, parent, option, index):
-        editor = qtw.QCheckBox(parent)
-        model = index.model()
-        item = model.data(index, role=ActiveRole)
-        editor.setChecked(item)
-
-        return editor
-
-    @override
-    def setEditorData(self, editor, index):
-        model = index.model()
-        item = model.data(index, role=ActiveRole)
-        editor.setChecked(item)
-
-    @override
-    def setModelData(self, editor: qtw.QCheckBox, model, index):
-        model.setData(index, editor.isChecked(), ActiveRole)
-
-    @override
-    def updateEditorGeometry(self, editor, option, index):
-        editor.setGeometry(option.rect)

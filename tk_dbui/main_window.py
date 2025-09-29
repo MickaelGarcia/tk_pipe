@@ -9,11 +9,11 @@ from Qt import QtCore as qtc
 from Qt import QtWidgets as qtw
 
 from tk_db.db import Db
+from tk_db.models import AssetType
 from tk_dbui.centra_widgets_db import AssetTypeTable
 from tk_dbui.centra_widgets_db import PublishTypeTable
 from tk_dbui.centra_widgets_db import TaskTypeTable
-from tk_dbui.models import AssetTaskTypeListModel
-from tk_dbui.models import AssetTaskTypeTableModel
+from tk_dbui.models import EntityListModel
 from tk_dbui.models import ProjectListModel
 
 
@@ -53,11 +53,10 @@ class DbButtonsWidget(qtw.QWidget):
         btn.setCheckable(True)
         btn.clicked.connect(functools.partial(self._on_button_pressed, button_name))
         if index == -1:
-            index  = len(self._btn_types) + 1
+            index = len(self._btn_types) + 1
         self._lay_main.insertWidget(index, btn)
 
         self._btn_types[btn] = button_name
-
 
 
 class DbTableWidget(qtw.QWidget):
@@ -105,7 +104,6 @@ class DbTableWidget(qtw.QWidget):
 
 
 class DbEntityTabWidget(qtw.QWidget):
-
     def __init__(self, app, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.app = app
@@ -119,7 +117,7 @@ class DbEntityTabWidget(qtw.QWidget):
         self._btn_asset.setCheckable(True)
 
         self._lsv_asset_type = qtw.QListView(self)
-        self._asset_type_model = AssetTaskTypeListModel()
+        self._asset_type_model = EntityListModel(AssetType)
         self._lsv_asset_type.setModel(self._asset_type_model)
         self._lsv_asset_type.hide()
 
@@ -141,7 +139,7 @@ class DbEntityTabWidget(qtw.QWidget):
 
         # Initialisation
 
-        self._asset_type_model.set_asset_type(list(self.app.db.asset_types()))
+        self._asset_type_model.set_entities(list(self.app.db.asset_types()))
 
         self._btn_asset.setChecked(True)
         self._on_btn_asset_clicked()
@@ -153,7 +151,8 @@ class DbEntityTabWidget(qtw.QWidget):
             return
 
         self._lsv_asset_type.show()
-        self._asset_type_model.set_asset_type(list(self.app.db.asset_types()))
+        self._asset_type_model.set_entities(list(self.app.db.asset_types()))
+
 
 class MainWindow(qtw.QMainWindow):
     """Database main window."""
@@ -177,7 +176,7 @@ class MainWidget(qtw.QWidget):
 
         # Widgets
         self._db_widget = DbTableWidget(self.app, self)
-        self._entity_widget = DbEntityTabWidget(self.app, self )
+        self._entity_widget = DbEntityTabWidget(self.app, self)
 
         self._tab_widget = qtw.QTabWidget(self)
         self._tab_widget.addTab(self._entity_widget, "Entity")

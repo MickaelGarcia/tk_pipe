@@ -10,7 +10,7 @@ class DbEntity:
         self._bc_entity = entity
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.code} - {self.id}"
+        return f"{self.__class__.__name__}({self.code} - {self.id})"
 
     @property
     def id(self) -> int:
