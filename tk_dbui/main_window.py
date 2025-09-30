@@ -2,19 +2,19 @@
 
 from __future__ import annotations
 
-import functools
 import sys
 
-from Qt import QtCore as qtc
 from Qt import QtWidgets as qtw
 
 from tk_db.db import Db
 from tk_db.models import AssetType
 from tk_dbui.centra_widgets_db import AssetTypeTable
+from tk_dbui.centra_widgets_db import ProjectEditableWidget
 from tk_dbui.centra_widgets_db import PublishTypeTable
 from tk_dbui.centra_widgets_db import TaskTypeTable
 from tk_dbui.models import EntityListModel
 from tk_dbui.models import ProjectListModel
+from tk_ui.widgets import RadioButtonsWidget
 
 
 class App:
@@ -24,42 +24,6 @@ class App:
         self.db = Db()
 
 
-class DbButtonsWidget(qtw.QWidget):
-    """Database button widget."""
-
-    ButtonPressed = qtc.Signal(str)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self._lay_main = qtw.QVBoxLayout(self)
-        self.selected_button = None
-
-        self._btn_types = {}
-
-        self._lay_main.addStretch()
-
-    def _on_button_pressed(self, button_name):
-        for btn, name in self._btn_types.items():
-            if name == button_name:
-                self.selected_button = name
-                self.ButtonPressed.emit(name)
-                btn.setChecked(True)
-                continue
-            btn.setChecked(False)
-
-    def add_buttons(self, button_name, index: int = -1, *args, **kwargs):
-        """Add button to the ui."""
-        btn = qtw.QPushButton(*args, **kwargs)
-        btn.setCheckable(True)
-        btn.clicked.connect(functools.partial(self._on_button_pressed, button_name))
-        if index == -1:
-            index = len(self._btn_types) + 1
-        self._lay_main.insertWidget(index, btn)
-
-        self._btn_types[btn] = button_name
-
-
 class DbTableWidget(qtw.QWidget):
     """Database table widget."""
 
@@ -67,22 +31,29 @@ class DbTableWidget(qtw.QWidget):
         super().__init__(*args, **kwargs)
         self.app = app
 
-        self._btn_widget = DbButtonsWidget(self)
+        self._btn_widget = RadioButtonsWidget(self)
         self._btn_widget.add_buttons("projects", 0, "Projects")
         self._btn_widget.add_buttons("asset_types", 1, "Asset Types")
         self._btn_widget.add_buttons("task_types", 2, "Task Types")
         self._btn_widget.add_buttons("publish_types", 3, "Publish Types")
 
+        self._project_widget = ProjectEditableWidget(self.app, self)
+        self._project_widget.set_projects(self.app.db.projects())
+        self._project_widget.hide()
+
         self._tbl_asset_type = AssetTypeTable(self.app, self)
+        self._tbl_asset_type.set_asset_types(self.app.db.asset_types())
         self._tbl_asset_type.hide()
 
         self._tbl_task_type = TaskTypeTable(self.app, self)
+        self._tbl_task_type.set_task_type(self.app.db.task_types())
         self._tbl_task_type.hide()
 
         self._tbl_publish_type = PublishTypeTable(self.app, self)
         self._tbl_publish_type.hide()
 
         self._central_widget_by_name: dict[str, qtw.QWidget] = {
+            "projects": self._project_widget,
             "asset_types": self._tbl_asset_type,
             "task_types": self._tbl_task_type,
             "publish_types": self._tbl_publish_type,
@@ -90,6 +61,7 @@ class DbTableWidget(qtw.QWidget):
 
         lay_main = qtw.QHBoxLayout(self)
         lay_main.addWidget(self._btn_widget)
+        lay_main.addWidget(self._project_widget)
         lay_main.addWidget(self._tbl_asset_type)
         lay_main.addWidget(self._tbl_task_type)
         lay_main.addWidget(self._tbl_publish_type)
@@ -105,6 +77,8 @@ class DbTableWidget(qtw.QWidget):
 
 
 class DbEntityTabWidget(qtw.QWidget):
+    """Entity tab widget."""
+
     def __init__(self, app, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.app = app
@@ -152,16 +126,6 @@ class MainWindow(qtw.QMainWindow):
         self.setWindowTitle("Asset Manager")
         self.setMinimumSize(800, 800)
 
-        wgt_main = MainWidget(self.app)
-        self.setCentralWidget(wgt_main)
-
-
-class MainWidget(qtw.QWidget):
-    """Central widget."""
-
-    def __init__(self, app: App, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.app = app
 
         # Widgets
         self._db_widget = DbTableWidget(self.app, self)
@@ -173,6 +137,10 @@ class MainWidget(qtw.QWidget):
 
         lay_main = qtw.QVBoxLayout(self)
         lay_main.addWidget(self._tab_widget)
+
+        wgt_main = qtw.QWidget()
+        self.setCentralWidget(wgt_main)
+        wgt_main.setLayout(lay_main)
 
 
 if __name__ == "__main__":

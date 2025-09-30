@@ -178,7 +178,9 @@ class DbTask(DbEntity):
         release: str,
         version: int,
     ) -> str:
-        root_path = self.asset.project.metadata.get("root_path")
+        environ = self.asset.project.metadata.get("env")
+        root_path = environ["TK_PROJECT_PATH"]
+
         if not root_path:
             raise ValueError("Missing project root path")
 
