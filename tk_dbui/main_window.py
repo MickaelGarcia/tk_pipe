@@ -114,12 +114,10 @@ class DbEntityTabWidget(qtw.QWidget):
         self._cbx_project.setModel(self._project_model)
 
         self._btn_asset = qtw.QPushButton("Asset")
-        self._btn_asset.setCheckable(True)
 
         self._lsv_asset_type = qtw.QListView(self)
         self._asset_type_model = EntityListModel(AssetType)
         self._lsv_asset_type.setModel(self._asset_type_model)
-        self._lsv_asset_type.hide()
 
         # Layouts
         lay_master = qtw.QHBoxLayout(self)
@@ -138,19 +136,9 @@ class DbEntityTabWidget(qtw.QWidget):
         self._btn_asset.clicked.connect(self._on_btn_asset_clicked)
 
         # Initialisation
-
         self._asset_type_model.set_entities(list(self.app.db.asset_types()))
 
-        self._btn_asset.setChecked(True)
-        self._on_btn_asset_clicked()
-
     def _on_btn_asset_clicked(self):
-        is_checked = self._btn_asset.isChecked()
-        if not is_checked:
-            self._lsv_asset_type.hide()
-            return
-
-        self._lsv_asset_type.show()
         self._asset_type_model.set_entities(list(self.app.db.asset_types()))
 
 
