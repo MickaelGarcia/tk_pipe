@@ -44,7 +44,7 @@ class DbPublishType(DbEntity):
 
     def set_active(self, value):
         """Set publish active or not."""
-        with self.db.Session as session:
+        with self.db.Session() as session:
             publish = session.query(PublishType).where(PublishType.id == self.id).first()
             publish.active = value
             session.commit()

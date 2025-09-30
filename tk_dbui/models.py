@@ -102,11 +102,11 @@ class EntityTableModel(qtc.QAbstractTableModel):
 
     @override
     def setData(self, index, value, role=...):
-        asset_type = self._entities[index.row()]
+        entity = self._entities[index.row()]
         column = index.column()
         column_name = self._column_names[column]
         if role == qtc.Qt.CheckStateRole and column_name == "active":
-            asset_type.set_active(bool(value))
+            entity.set_active(bool(value))
             self.dataChanged.emit(index, index)
             return True
 
@@ -117,7 +117,7 @@ class EntityTableModel(qtc.QAbstractTableModel):
         flags = super().flags(index)
         col = index.column()
 
-        if col == 3:
+        if self._column_names[col] == "active":
             flags |= qtc.Qt.ItemIsUserCheckable
 
         return flags
