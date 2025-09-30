@@ -172,8 +172,6 @@ class AddPublishTypeDialog(qtw.QDialog):
         extension_re = qtc.QRegExp(r"\.\w+")
         extension_validator = qtg.QRegExpValidator(extension_re)
         self.extension.setValidator(extension_validator)
-        self.extension.setText(".")
-
 
         btn_ok = qtw.QPushButton("Ok")
         btn_cancel = qtw.QPushButton("Cancel")

@@ -44,6 +44,7 @@ class DbButtonsWidget(qtw.QWidget):
             if name == button_name:
                 self.selected_button = name
                 self.ButtonPressed.emit(name)
+                btn.setChecked(True)
                 continue
             btn.setChecked(False)
 
