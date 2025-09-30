@@ -23,6 +23,33 @@ if TYPE_CHECKING:
     from tk_dbui.main_window import App
 
 
+class ProjectEditableWidget(qtw.QWidget):
+    """Project based widget to view project list and edit metadata."""
+
+    def __init__(self, app: App, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._app = app
+
+        # Widgets
+        self._lst_projects = qtw.QListView(self)
+        self._project_model = ProjectListModel()
+        self._lst_projects.setModel(self._project_model)
+
+        self._lne_project_code = qtw.QLineEdit(self)
+        self._lne_project_name = qtw.QLineEdit(self)
+        # Layout
+        lay_main = qtw.QHBoxLayout(self)
+        lay_main.addWidget(self._lst_projects)
+
+        # Connections
+
+        # Initialisation
+
+    def set_projects(self, projects: list[DbProject]):
+        """Set projects list to model."""
+        self._project_model.set_projects(projects)
+
+
 class AssetTypeTable(qtw.QWidget):
     """Asset type table widget."""
 
