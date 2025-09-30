@@ -107,7 +107,6 @@ class EntityTableModel(qtc.QAbstractTableModel):
         column_name = self._column_names[column]
         if role == qtc.Qt.CheckStateRole and column_name == "active":
             entity.set_active(bool(value))
-            self.dataChanged.emit(index, index)
             return True
 
         return False
