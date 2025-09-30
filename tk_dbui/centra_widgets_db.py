@@ -50,6 +50,8 @@ class AssetTypeTable(qtw.QWidget):
 
     def _on_btn_add_clicked(self):
         dlg = AddAssetTaskTypeDialog(self)
+        dlg.setWindowTitle("Add asset type")
+
         if not dlg.exec():
             return
 
@@ -70,6 +72,8 @@ class TaskTypeTable(AssetTypeTable):
 
     def _on_btn_add_clicked(self):
         dlg = AddAssetTaskTypeDialog(self)
+        dlg.setWindowTitle("Add task type")
+
         if not dlg.exec():
             return
 
@@ -91,8 +95,6 @@ class AddAssetTaskTypeDialog(qtw.QDialog):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.setWindowTitle("Add asset type")
-
         # Widgets
         self.code = qtw.QLineEdit()
         asset_type_code_re = qtc.QRegExp(c_db.asset_type_code_str)
@@ -113,6 +115,56 @@ class AddAssetTaskTypeDialog(qtw.QDialog):
 
         lay_lines.addRow("Code:", self.code)
         lay_lines.addRow("Name:", self.name)
+
+        lay_btn = qtw.QHBoxLayout()
+        lay_btn.addStretch()
+        lay_btn.addWidget(btn_ok)
+        lay_btn.addWidget(btn_cancel)
+
+        lay_main.addLayout(lay_lines)
+        lay_main.addLayout(lay_btn)
+
+        # Connections
+        btn_ok.clicked.connect(self.accept)
+        btn_cancel.clicked.connect(self.reject)
+
+
+class AddPublishTypeDialog(qtw.QDialog):
+    """Dialog to add publish type."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.setWindowTitle("Add Publish type")
+
+        # Widgets
+        self.code = qtw.QLineEdit()
+        publish_type_code_re = qtc.QRegExp(r"[a-z]+(?:_[a-z]+)*")
+        publish_type_code_validator = qtg.QRegExpValidator(publish_type_code_re)
+        self.code.setValidator(publish_type_code_validator)
+
+        self.file_type = qtw.QLineEdit()
+        file_desc_re = qtc.QRegExp(c_db.file_desc_grp)
+        file_desc_validator = qtg.QRegExpValidator(file_desc_re)
+        self.file_type.setValidator(file_desc_validator)
+
+        self.extension = qtw.QLineEdit()
+        extension_re = qtc.QRegExp(r"\.\w+")
+        extension_validator = qtg.QRegExpValidator(extension_re)
+        self.extension.setValidator(extension_validator)
+        self.extension.setText(".")
+
+
+        btn_ok = qtw.QPushButton("Ok")
+        btn_cancel = qtw.QPushButton("Cancel")
+
+        # Layout
+        lay_main = qtw.QVBoxLayout(self)
+        lay_lines = qtw.QFormLayout()
+
+        lay_lines.addRow("Code:", self.code)
+        lay_lines.addRow("File type:", self.file_type)
+        lay_lines.addRow("Extension:", self.extension)
 
         lay_btn = qtw.QHBoxLayout()
         lay_btn.addStretch()
@@ -151,6 +203,7 @@ class PublishTypeTable(qtw.QWidget):
         lay_main.addWidget(self._tbl_publish_type)
         lay_main.addLayout(lay_btn)
 
+        btn_add_publish_type.clicked.connect(self._on_add_button_clicked)
         btn_refresh.clicked.connect(self.refresh)
 
         self.refresh()
@@ -158,3 +211,22 @@ class PublishTypeTable(qtw.QWidget):
     def refresh(self):
         """Refresh ui content."""
         self._publish_type_model.set_entities(list(self._app.db.publish_types()))
+
+    def _on_add_button_clicked(self):
+        dlg = AddPublishTypeDialog(self)
+        dlg.setWindowTitle("Add publish type")
+
+        if not dlg.exec():
+            return
+
+        code = dlg.code.text()
+        file_type = dlg.file_type.text()
+        extension = dlg.extension.text()
+        if not code or not file_type or not extension:
+            return
+        entity = self._app.db.get_or_create_publish_type(
+            code,
+            file_type,
+            extension,
+        )
+        self._publish_type_model.add_entity(entity)
