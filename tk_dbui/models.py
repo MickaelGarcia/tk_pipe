@@ -146,6 +146,15 @@ class EntityTableModel(qtc.QAbstractTableModel):
 
         self.endInsertRows()
 
+    def get_entity(self, code: str) -> DbEntity | None:
+        """Get entity by code."""
+        try:
+            entity = next(entity for entity in self._entities if entity.code == code)
+        except StopIteration:
+            return None
+
+        return entity
+
 
 class EntityListModel(qtc.QAbstractListModel):
     """Asset type and task type list model."""

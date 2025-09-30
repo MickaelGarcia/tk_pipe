@@ -59,6 +59,16 @@ class AssetTypeTable(qtw.QWidget):
         name = dlg.name.text()
         if not code or not name:
             return
+
+        if self._asset_type_model.get_entity(code):
+            qtw.QMessageBox.critical(
+                self,
+                "Asset type already exists",
+                f"Asset type {code!r} already exists in database.",
+                qtw.QMessageBox.Ok
+            )
+            return
+
         entity = self._app.db.get_or_create_asset_type(dlg.code.text(), dlg.name.text())
         self._asset_type_model.add_entity(entity)
 
@@ -81,6 +91,16 @@ class TaskTypeTable(AssetTypeTable):
         name = dlg.name.text()
         if not code or not name:
             return
+
+        if self._asset_type_model.get_entity(code):
+            qtw.QMessageBox.critical(
+                self,
+                "Task type already exists",
+                f"Task type {code!r} already exists in database.",
+                qtw.QMessageBox.Ok
+            )
+            return
+
         entity = self._app.db.get_or_create_task_type(dlg.code.text(), dlg.name.text())
         self._asset_type_model.add_entity(entity)
 
@@ -224,6 +244,16 @@ class PublishTypeTable(qtw.QWidget):
         extension = dlg.extension.text()
         if not code or not file_type or not extension:
             return
+
+        if self._publish_type_model.get_entity(code):
+            qtw.QMessageBox.critical(
+                self,
+                "Publish type already exists",
+                f"Publish type {code!r} already exists in database.",
+                qtw.QMessageBox.Ok
+            )
+            return
+
         entity = self._app.db.get_or_create_publish_type(
             code,
             file_type,
