@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 from typing import TYPE_CHECKING
 
 from Qt import QtCore as qtc
@@ -9,22 +11,25 @@ from Qt import QtGui as qtg
 from Qt import QtWidgets as qtw
 
 from tk_const import c_db
-from tk_db.dbpublishtype import DbPublishType
 from tk_db.models import AssetType
 from tk_db.models import PublishType
 from tk_dbui.models import EntityTableModel
 from tk_dbui.models import ProjectListModel
+from tk_dbui.models import ProjectRole
 
 
 if TYPE_CHECKING:
     from tk_db.dbassettype import DbAssetType
     from tk_db.dbproject import DbProject
+    from tk_db.dbpublishtype import DbPublishType
     from tk_db.dbtasktype import DbTaskType
     from tk_dbui.main_window import App
 
 
 class ProjectEditableWidget(qtw.QWidget):
     """Project based widget to view project list and edit metadata."""
+
+    ProjectEdited = qtc.Signal()
 
     def __init__(self, app: App, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -89,11 +94,19 @@ class ProjectEditableWidget(qtw.QWidget):
 
         # Connections
         self._btn_locked.clicked.connect(self._on_btn_locked_clicked)
+        self._lst_projects.clicked.connect(self._on_project_selected)
+        self._btn_undo.clicked.connect(self._on_btn_cancel_clicked)
+        self._btn_save.clicked.connect(self._on_btn_save_clicked)
         # Initialisation
 
     def set_projects(self, projects: list[DbProject]):
         """Set projects list to model."""
+        current_index = self._lst_projects.currentIndex()
+
         self._project_model.set_projects(projects)
+
+        if current_index.isValid():
+            self._lst_projects.setCurrentIndex(current_index)
 
     def _on_btn_locked_clicked(self):
         value = not self._btn_locked.isChecked()
@@ -103,6 +116,34 @@ class ProjectEditableWidget(qtw.QWidget):
         self._txt_metadata.setEnabled(value)
         self._btn_save.setEnabled(value)
         self._btn_undo.setEnabled(value)
+        if not value:
+            self._on_btn_cancel_clicked()
+
+    def _on_project_selected(self, index: qtc.QModelIndex):
+        project: DbProject = self._lst_projects.model().data(index, role=ProjectRole)
+        self._cbx_active.setChecked(project.is_active())
+        self._lne_project_code.setText(project.code)
+        self._lne_project_name.setText(project.name)
+        metadata = project.metadata.copy()
+        self._txt_metadata.setText(json.dumps(metadata, indent=4))
+
+    def _on_btn_cancel_clicked(self):
+        index = self._lst_projects.currentIndex()
+        self._on_project_selected(index)
+
+    def _on_btn_save_clicked(self):
+        code = self._lne_project_code.text()
+        name = self._lne_project_name.text()
+        metadata = eval(self._txt_metadata.toPlainText())
+
+        project = self._lst_projects.model().data(
+            self._lst_projects.currentIndex(), role=ProjectRole
+        )
+        project.metadata = metadata
+        project.code = code
+        project.name = name
+        self.ProjectEdited.emit()
+
 
 
 class AssetTypeTable(qtw.QWidget):

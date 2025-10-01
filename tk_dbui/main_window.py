@@ -67,7 +67,9 @@ class DbTableWidget(qtw.QWidget):
         lay_main.addWidget(self._tbl_task_type)
         lay_main.addWidget(self._tbl_publish_type)
 
+        # Connections
         self._btn_widget.ButtonPressed.connect(self._on_db_button_clicked)
+        self._project_widget.ProjectEdited.connect(self._on_project_edited)
 
     def _on_db_button_clicked(self, widget_name):
         for name, db_widget in self._central_widget_by_name.items():
@@ -75,6 +77,9 @@ class DbTableWidget(qtw.QWidget):
                 db_widget.show()
                 continue
             db_widget.hide()
+
+    def _on_project_edited(self):
+        self._project_widget.set_projects(self.app.db.projects())
 
 
 class DbEntityTabWidget(qtw.QWidget):

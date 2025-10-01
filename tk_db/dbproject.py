@@ -31,10 +31,26 @@ class DbProject(DbEntity):
         super().__init__(project)
         self.db = db
 
+    @DbEntity.code.setter
+    def code(self, value: str):
+        """Set project code."""
+        with self.db.Session() as session:
+            project = session.query(Project).where(Project.id == self.id).first()
+            project.code = value
+            session.commit()
+
     @property
     def name(self) -> str:
         """Return project name."""
         return self._bc_entity.name
+
+    @name.setter
+    def name(self, value: str):
+        """Set project name."""
+        with self.db.Session() as session:
+            project = session.query(Project).where(Project.id == self.id).first()
+            project.name = value
+            session.commit()
 
     @property
     def metadata(self) -> dict:
@@ -53,9 +69,10 @@ class DbProject(DbEntity):
         """
         assert isinstance(value, dict)
         with self.db.Session() as session:
-            session.query(Project).where(Project.code == self.code).update(
-                {"metadata_": str(value)}
-            )
+            project = session.query(Project).where(Project.code == self.code).first()
+
+            project.metadata_ = str(value)
+
             session.commit()
 
     def metadata_update(self, value: dict):
