@@ -7,10 +7,9 @@ from typing import TYPE_CHECKING
 from Qt import QtCore as qtc
 from Qt import QtGui as qtg
 from Qt import QtWidgets as qtw
-from typing_extensions import override
 
 from tk_const import c_db
-from tk_db.dbtasktype import DbTaskType
+from tk_db.dbpublishtype import DbPublishType
 from tk_db.models import AssetType
 from tk_db.models import PublishType
 from tk_dbui.models import EntityTableModel
@@ -20,6 +19,7 @@ from tk_dbui.models import ProjectListModel
 if TYPE_CHECKING:
     from tk_db.dbassettype import DbAssetType
     from tk_db.dbproject import DbProject
+    from tk_db.dbtasktype import DbTaskType
     from tk_dbui.main_window import App
 
 
@@ -34,20 +34,75 @@ class ProjectEditableWidget(qtw.QWidget):
         self._lst_projects = qtw.QListView(self)
         self._project_model = ProjectListModel()
         self._lst_projects.setModel(self._project_model)
+        btn_add_project = qtw.QPushButton("Add")
+
+        self._btn_locked = qtw.QPushButton("Locked")
+        self._btn_locked.setCheckable(True)
+        self._btn_locked.setChecked(True)
+
+        self._cbx_active = qtw.QCheckBox(self)
+        self._cbx_active.setEnabled(False)
 
         self._lne_project_code = qtw.QLineEdit(self)
+        self._lne_project_code.setEnabled(False)
+
         self._lne_project_name = qtw.QLineEdit(self)
+        self._lne_project_name.setEnabled(False)
+
+        self._txt_metadata = qtw.QTextEdit(self)
+        self._txt_metadata.setEnabled(False)
+
+        self._btn_save = qtw.QPushButton("Save")
+        self._btn_save.setEnabled(False)
+
+        self._btn_undo = qtw.QPushButton("Cancel edit")
+        self._btn_undo.setEnabled(False)
+
         # Layout
         lay_main = qtw.QHBoxLayout(self)
-        lay_main.addWidget(self._lst_projects)
+
+        lay_projects_list = qtw.QVBoxLayout()
+
+        lay_property = qtw.QVBoxLayout()
+        lay_lines_prop = qtw.QFormLayout()
+        lay_btn_prop = qtw.QHBoxLayout()
+
+        lay_projects_list.addWidget(self._lst_projects)
+        lay_projects_list.addWidget(btn_add_project)
+
+        lay_lines_prop.addRow("Active:", self._cbx_active)
+        lay_lines_prop.addRow("Code:", self._lne_project_code)
+        lay_lines_prop.addRow("Display Name:", self._lne_project_name)
+
+        lay_btn_prop.addWidget(self._btn_save)
+        lay_btn_prop.addWidget(self._btn_undo)
+
+        lay_main.addLayout(lay_projects_list)
+
+        lay_property.addWidget(self._btn_locked)
+        lay_property.addLayout(lay_lines_prop)
+        lay_property.addWidget(self._txt_metadata)
+        lay_property.addLayout(lay_btn_prop)
+
+        lay_main.addLayout(lay_projects_list)
+        lay_main.addLayout(lay_property)
 
         # Connections
-
+        self._btn_locked.clicked.connect(self._on_btn_locked_clicked)
         # Initialisation
 
     def set_projects(self, projects: list[DbProject]):
         """Set projects list to model."""
         self._project_model.set_projects(projects)
+
+    def _on_btn_locked_clicked(self):
+        value = not self._btn_locked.isChecked()
+        self._cbx_active.setEnabled(value)
+        self._lne_project_code.setEnabled(value)
+        self._lne_project_name.setEnabled(value)
+        self._txt_metadata.setEnabled(value)
+        self._btn_save.setEnabled(value)
+        self._btn_undo.setEnabled(value)
 
 
 class AssetTypeTable(qtw.QWidget):
@@ -148,25 +203,20 @@ class PublishTypeTable(qtw.QWidget):
         self._tbl_publish_type.setModel(self._publish_type_model)
 
         btn_add_publish_type = qtw.QPushButton("Add")
-        btn_refresh = qtw.QPushButton("Refresh")
 
         lay_main = qtw.QVBoxLayout(self)
         lay_btn = qtw.QHBoxLayout()
 
         lay_btn.addWidget(btn_add_publish_type)
-        lay_btn.addWidget(btn_refresh)
 
         lay_main.addWidget(self._tbl_publish_type)
         lay_main.addLayout(lay_btn)
 
         btn_add_publish_type.clicked.connect(self._on_add_button_clicked)
-        btn_refresh.clicked.connect(self.refresh)
 
-        self.refresh()
-
-    def refresh(self):
-        """Refresh ui content."""
-        self._publish_type_model.set_entities(list(self._app.db.publish_types()))
+    def set_publish_types(self, publish_types: list[DbPublishType]):
+        """Set publish types in model."""
+        self._publish_type_model.set_entities(publish_types)
 
     def _on_add_button_clicked(self):
         dlg = AddPublishTypeDialog(self)

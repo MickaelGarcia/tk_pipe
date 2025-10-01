@@ -50,6 +50,7 @@ class DbTableWidget(qtw.QWidget):
         self._tbl_task_type.hide()
 
         self._tbl_publish_type = PublishTypeTable(self.app, self)
+        self._tbl_publish_type.set_publish_types(self.app.db.publish_types())
         self._tbl_publish_type.hide()
 
         self._central_widget_by_name: dict[str, qtw.QWidget] = {
