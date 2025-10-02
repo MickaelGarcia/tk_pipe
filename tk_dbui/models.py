@@ -67,6 +67,15 @@ class ProjectListModel(qtc.QAbstractListModel):
         self._projects.append(project)
         self.endInsertRows()
 
+    def get_project(self, code: str) -> DbProject | None:
+        """Get project object from model."""
+        try:
+            project = next(entity for entity in self._projects if entity.code == code)
+        except StopIteration:
+            return None
+
+        return project
+
 
 class EntityTableModel(qtc.QAbstractTableModel):
     """Asset type and task type table model."""

@@ -91,7 +91,7 @@ class Db:
             self.project(code)
         except MissingDbProjectError:
             with self.Session() as session:
-                project_obj = Project(code=code, name=name, metadata_="", active=True)
+                project_obj = Project(code=code, name=name, metadata_="{}", active=True)
 
                 session.add(project_obj)
                 session.commit()
