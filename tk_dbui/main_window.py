@@ -60,18 +60,23 @@ class DbTableWidget(qtw.QWidget):
             "publish_types": self._tbl_publish_type,
         }
 
+        self._stretch = qtw.QSpacerItem(
+            10, 10, qtw.QSizePolicy.Expanding, qtw.QSizePolicy.Minimum
+        )
         lay_main = qtw.QHBoxLayout(self)
         lay_main.addWidget(self._btn_widget)
         lay_main.addWidget(self._project_widget)
         lay_main.addWidget(self._tbl_asset_type)
         lay_main.addWidget(self._tbl_task_type)
         lay_main.addWidget(self._tbl_publish_type)
+        lay_main.addItem(self._stretch)
 
         # Connections
         self._btn_widget.ButtonPressed.connect(self._on_db_button_clicked)
         self._project_widget.ProjectEdited.connect(self._on_project_edited)
 
     def _on_db_button_clicked(self, widget_name):
+        self._stretch.changeSize(0, 0, qtw.QSizePolicy.Minimum, qtw.QSizePolicy.Minimum)
         for name, db_widget in self._central_widget_by_name.items():
             if widget_name == name:
                 db_widget.show()
