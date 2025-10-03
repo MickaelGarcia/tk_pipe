@@ -21,60 +21,8 @@ PUBLISH_TYPE_HEADER_TITLES = ["Id", "Code", "File_type", "Extension", "Active"]
 
 EntityRole = qtc.Qt.UserRole + 1
 CodeRole = qtc.Qt.UserRole + 2
-ActiveRole = qtc.Qt.UserRole + 3
-ProjectRole = qtc.Qt.UserRole + 4
-ProjectCodeRole = qtc.Qt.UserRole + 5
-
-
-class ProjectListModel(qtc.QAbstractListModel):
-    """Project list model."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._projects: list[DbProject] = []
-
-    @override
-    def rowCount(self, parent=None, *args, **kwargs):
-        return len(self._projects)
-
-    @override
-    def data(self, index, role=None) -> Any:
-        project = self._projects[index.row()]
-        if role == qtc.Qt.DisplayRole:
-            return f"{project.name} ({project.code})"
-        elif role == ProjectRole:
-            return project
-        elif role == ProjectCodeRole:
-            return project.code
-        elif role == ActiveRole:
-            return project.is_active()
-
-        return None
-
-    def set_projects(self, projects: list[DbProject]):
-        """Set projects to model."""
-        self.beginResetModel()
-        self._projects = projects.copy()
-        self.endResetModel()
-
-    def add_project(self, project: DbProject):
-        """Add project in model."""
-        self.beginInsertRows(
-            qtc.QModelIndex(),
-            len(self._projects),
-            len(self._projects) + 1,
-        )
-        self._projects.append(project)
-        self.endInsertRows()
-
-    def get_project(self, code: str) -> DbProject | None:
-        """Get project object from model."""
-        try:
-            project = next(entity for entity in self._projects if entity.code == code)
-        except StopIteration:
-            return None
-
-        return project
+NameRole = qtc.Qt.UserRole + 3
+ActiveRole = qtc.Qt.UserRole + 4
 
 
 class EntityTableModel(qtc.QAbstractTableModel):
@@ -106,6 +54,10 @@ class EntityTableModel(qtc.QAbstractTableModel):
             return entity
         elif role == qtc.Qt.CheckStateRole and column_name == "active":
             return qtc.Qt.Checked if entity.is_active() else qtc.Qt.Unchecked
+        elif role == CodeRole:
+            return entity.code
+        elif role == NameRole:
+            return entity.name
 
         return None
 
@@ -186,6 +138,10 @@ class EntityListModel(qtc.QAbstractListModel):
             return entity.name
         elif role == EntityRole:
             return entity
+        elif role == CodeRole:
+            return entity.code
+        elif role == NameRole:
+            return entity.name
 
         return None
 
@@ -206,3 +162,12 @@ class EntityListModel(qtc.QAbstractListModel):
         self._entities.append(entity)
 
         self.endInsertRows()
+
+    def get_entity(self, code: str):
+        """Get entity by code."""
+        try:
+            entity = next(entity for entity in self._entities if entity.code == code)
+        except StopIteration:
+            return None
+
+        return entity

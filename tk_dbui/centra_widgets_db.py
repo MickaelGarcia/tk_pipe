@@ -12,10 +12,11 @@ from Qt import QtWidgets as qtw
 
 from tk_const import c_db
 from tk_db.models import AssetType
+from tk_db.models import Project
 from tk_db.models import PublishType
+from tk_dbui.models import EntityListModel
+from tk_dbui.models import EntityRole
 from tk_dbui.models import EntityTableModel
-from tk_dbui.models import ProjectListModel
-from tk_dbui.models import ProjectRole
 
 
 if TYPE_CHECKING:
@@ -37,7 +38,7 @@ class ProjectEditableWidget(qtw.QWidget):
 
         # Widgets
         self._lst_projects = qtw.QListView(self)
-        self._project_model = ProjectListModel()
+        self._project_model = EntityListModel(Project)
         self._lst_projects.setModel(self._project_model)
         btn_add_project = qtw.QPushButton("Add")
 
@@ -105,7 +106,7 @@ class ProjectEditableWidget(qtw.QWidget):
         """Set projects list to model."""
         current_index = self._lst_projects.currentIndex()
 
-        self._project_model.set_projects(projects)
+        self._project_model.set_entities(projects)
 
         if current_index.isValid():
             self._lst_projects.setCurrentIndex(current_index)
@@ -129,7 +130,7 @@ class ProjectEditableWidget(qtw.QWidget):
     def _on_project_selected(self, index: qtc.QModelIndex):
         if not index.isValid():
             return
-        project: DbProject = self._lst_projects.model().data(index, role=ProjectRole)
+        project: DbProject = self._lst_projects.model().data(index, role=EntityRole)
         self._cbx_active.setChecked(project.is_active())
         self._lne_project_code.setText(project.code)
         self._lne_project_name.setText(project.name)
@@ -147,7 +148,6 @@ class ProjectEditableWidget(qtw.QWidget):
         self._btn_save.setEnabled(False)
         self._btn_undo.setEnabled(False)
 
-
     def _on_btn_cancel_clicked(self):
         index = self._lst_projects.currentIndex()
         self._on_project_selected(index)
@@ -162,7 +162,7 @@ class ProjectEditableWidget(qtw.QWidget):
         metadata = eval(metadata_text)
 
         project = self._lst_projects.model().data(
-            self._lst_projects.currentIndex(), role=ProjectRole
+            self._lst_projects.currentIndex(), role=EntityRole
         )
         project.metadata = metadata
         project.code = code
@@ -180,7 +180,7 @@ class ProjectEditableWidget(qtw.QWidget):
         if not code or not name:
             return
 
-        if self._project_model.get_project(code):
+        if self._project_model.get_entity(code):
             qtw.QMessageBox.critical(
                 self,
                 "Project already exists",

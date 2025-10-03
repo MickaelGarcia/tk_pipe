@@ -8,12 +8,12 @@ from Qt import QtWidgets as qtw
 
 from tk_db.db import Db
 from tk_db.models import AssetType
+from tk_db.models import Project
 from tk_dbui.centra_widgets_db import AssetTypeTable
 from tk_dbui.centra_widgets_db import ProjectEditableWidget
 from tk_dbui.centra_widgets_db import PublishTypeTable
 from tk_dbui.centra_widgets_db import TaskTypeTable
 from tk_dbui.models import EntityListModel
-from tk_dbui.models import ProjectListModel
 from tk_ui.widgets import RadioButtonsWidget
 
 
@@ -95,8 +95,8 @@ class DbEntityTabWidget(qtw.QWidget):
         self.app = app
 
         self._cbx_project = qtw.QComboBox(self)
-        self._project_model = ProjectListModel()
-        self._project_model.set_projects(list(self.app.db.projects()))
+        self._project_model = EntityListModel(Project)
+        self._project_model.set_entities(list(self.app.db.projects()))
         self._cbx_project.setModel(self._project_model)
 
         self._btn_asset = qtw.QPushButton("Asset")
@@ -136,7 +136,6 @@ class MainWindow(qtw.QMainWindow):
         self.app = app
         self.setWindowTitle("Asset Manager")
         self.setMinimumSize(800, 800)
-
 
         # Widgets
         self._db_widget = DbTableWidget(self.app, self)

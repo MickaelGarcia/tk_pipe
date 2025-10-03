@@ -23,6 +23,11 @@ class DbEntity:
         return self._bc_entity.code
 
     @property
+    def name(self) -> str:
+        """Return Entity name."""
+        return getattr(self, "name", self.code)
+
+    @property
     def columns(self):
         """Return entity table column names."""
         return self._bc_entity.__table__.columns.keys()
