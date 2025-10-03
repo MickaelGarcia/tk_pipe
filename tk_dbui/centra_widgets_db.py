@@ -111,6 +111,11 @@ class ProjectEditableWidget(qtw.QWidget):
             self._lst_projects.setCurrentIndex(current_index)
 
     def _on_btn_locked_clicked(self):
+        current_index = self._lst_projects.currentIndex()
+        if not current_index.isValid():
+            self._btn_locked.setChecked(True)
+            return
+
         value = not self._btn_locked.isChecked()
         self._cbx_active.setEnabled(value)
         self._lne_project_code.setEnabled(value)
@@ -122,6 +127,8 @@ class ProjectEditableWidget(qtw.QWidget):
             self._on_btn_cancel_clicked()
 
     def _on_project_selected(self, index: qtc.QModelIndex):
+        if not index.isValid():
+            return
         project: DbProject = self._lst_projects.model().data(index, role=ProjectRole)
         self._cbx_active.setChecked(project.is_active())
         self._lne_project_code.setText(project.code)
