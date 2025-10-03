@@ -168,6 +168,8 @@ class ProjectEditableWidget(qtw.QWidget):
         project.code = code
         project.name = name
         self.ProjectEdited.emit()
+        self._btn_locked.setChecked(True)
+        self._on_btn_locked_clicked()
 
     def _on_btn_add_clicked(self):
         dlg = AddProjectDialog()
