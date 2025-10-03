@@ -192,7 +192,7 @@ class ProjectEditableWidget(qtw.QWidget):
             return
 
         project = self._app.db.create_project(code, name)
-        self._project_model.add_project(project)
+        self._project_model.add_entity(project)
 
 
 class AssetTypeTable(qtw.QWidget):
