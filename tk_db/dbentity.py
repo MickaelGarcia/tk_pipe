@@ -25,7 +25,11 @@ class DbEntity:
     @property
     def name(self) -> str:
         """Return Entity name."""
-        return getattr(self, "name", self.code)
+        name = getattr(self._bc_entity, "name", None)
+        if not name:
+            name = self._bc_entity.code
+
+        return name
 
     @property
     def columns(self):
