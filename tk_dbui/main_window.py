@@ -9,10 +9,10 @@ from Qt import QtWidgets as qtw
 from tk_db.db import Db
 from tk_db.models import AssetType
 from tk_db.models import Project
-from tk_dbui.centra_widgets_db import AssetTypeTable
-from tk_dbui.centra_widgets_db import ProjectEditableWidget
-from tk_dbui.centra_widgets_db import PublishTypeTable
-from tk_dbui.centra_widgets_db import TaskTypeTable
+from tk_dbui.db_widgets import AssetTypeTable
+from tk_dbui.db_widgets import ProjectEditableWidget
+from tk_dbui.db_widgets import PublishTypeTable
+from tk_dbui.db_widgets import TaskTypeTable
 from tk_dbui.models import EntityListModel
 from tk_ui.widgets import RadioButtonsWidget
 
