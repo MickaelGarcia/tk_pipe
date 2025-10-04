@@ -37,6 +37,23 @@ class DbAsset(DbEntity):
         self.project = project
         self.asset_type = asset_type
 
+    @property
+    def is_active(self):
+        """Get if asset is active."""
+        with self.project.db.Session() as session:
+            query = session.query(Asset).where(Asset.id == self.id).first()
+            active = query.active
+
+        return active
+
+    def set_active(self, value: bool):
+        """Set asset active or not."""
+        with self.project.db.Session() as session:
+            query = session.query(Asset).where(Asset.id == self.id).first()
+            query.active = value
+            session.commit()
+
+
     def task(
         self, task_type: DbTaskType | None = None, code: str | None = None
     ) -> DbTask:

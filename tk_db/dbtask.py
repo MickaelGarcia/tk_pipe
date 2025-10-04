@@ -46,7 +46,7 @@ class DbTask(DbEntity):
         return self.task_type.name
 
     @property
-    def active(self) -> bool:
+    def is_active(self) -> bool:
         """Return if publish is active or not."""
         with self.asset.project.db.Session() as session:
             publish = session.query(Task).where(Task.id == self.id).first()
@@ -96,15 +96,6 @@ class DbTask(DbEntity):
                 )
                 .first()
             )
-            # publish_query = (
-            #     session.query(Publish).where(
-            #         Publish.task_id == self.id
-            #         and Publish.code == code
-            #         and Publish.publish_type_id == publish_type.id
-            #         and Publish.release == release
-            #         and Publish.version == version
-            #     )
-            # ).first()
 
         if not publish_query:
             raise MissingDbPublishError(

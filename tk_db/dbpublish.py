@@ -5,7 +5,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from tk_db.dbentity import DbEntity
+from tk_db.dbpublishtype import DbPublishType
 from tk_db.models import Publish
+from tk_db.models import PublishType
 
 
 if TYPE_CHECKING:
@@ -45,7 +47,7 @@ class DbPublish(DbEntity):
         return self._bc_entity.size
 
     @property
-    def active(self) -> bool:
+    def is_active(self) -> bool:
         """Return if publish is active or not."""
         with  self.task.asset.project.db.Session() as session:
             publish = session.query(Publish).where(Publish.id == self.id).first()
