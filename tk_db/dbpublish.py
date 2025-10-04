@@ -37,6 +37,23 @@ class DbPublish(DbEntity):
         return self._bc_entity.version
 
     @property
+    def version_name(self) -> str:
+        """Return publish version as fancy name."""
+        return f"{self.release[0]}{self.version:03d}"
+
+    @property
+    def publish_type(self) -> DbPublishType:
+        """Return publish type object."""
+        with self.task.asset.project.db.Session() as session:
+            publish_type = (
+                session.query(PublishType)
+                .where(PublishType.id == self._bc_entity.publish_type_id)
+                .first()
+            )
+            db_publish_type = DbPublishType(self.task.asset.project.db, publish_type)
+        return db_publish_type
+
+    @property
     def release(self) -> str:
         """Return if publish is release or work."""
         return self._bc_entity.release
