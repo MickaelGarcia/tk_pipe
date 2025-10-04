@@ -129,7 +129,10 @@ class DbProject(DbEntity):
         """Return assets in project."""
         assets = []
         with self.db.Session() as session:
-            assets_query = session.query(Asset).join(Project)
+            assets_query = (
+                session.query(Asset).join(Project)
+                .where(Project.code == self.code)
+            )
 
             for asset in assets_query:
                 asset_type_query = (
